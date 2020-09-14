@@ -1,5 +1,20 @@
 <?php 
- require '../../admin/functions.php';
+ require '../../admin/functions.php'; 
+ if (session_status() == PHP_SESSION_NONE) {
+   session_start();
+ }
+
+ if(!$_SESSION['loggedin']){
+   header('Location: ../login');
+ }
+ $user = $_SESSION['user'];
+ $username = $user['username'];
+ $nit = $user['nit'];
+ $lastname = $user['lastname'];
+ $phonenumber = $user['phonenumber'];
+ $email = $user['email'];
+ $role = $user['role'];
+
 
 include('../../includes/header.php');
 include('../../includes/navbar.php');
@@ -15,6 +30,8 @@ include('../../includes/navbar.php');
       </button>
     </div>
   </div>
+    <input type="text"
+      class="form-control" name="roleuser" id="roleuser" aria-describedby="helpId" placeholder="" value="<?php echo $role?>" style="display:none">
   <div id="alert-row" class="row">
     <div class="col-md-12">
       <div class="alert alert-success" role="alert">
@@ -24,12 +41,6 @@ include('../../includes/navbar.php');
   </div>
   <div class="row">
     <div class="col-md-12">
-    <iframe id="frame1" style="width:150px;height:150px"></iframe>
-     <!-- <form class="form-signin" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
-        <button type="button" name="" id="ver" class="btn btn-primary" btn-lg btn-block>ver archivo</button>
-      </form>-->
-      <a href="../../admin/download.php?file=fichero.pdf">Descargar fichero</a>
-
     <table id="example" class="table table-striped table-bordered" width="100%"></table>
     </div>
   </div>
@@ -119,8 +130,8 @@ include('../../includes/navbar.php');
       <div class="modal-body">
         <form id="update-form" class="form-signin" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
         <div class="form-label-group d-none">
-            <input type="text" id="inputId-update" class="form-control" autofocus
-              value="<?php echo $id; ?>" name="id" >
+            <input type="text" id="id-update" class="form-control" autofocus
+              name="id" >
           </div>
           <div class="form-label-group <?php echo (!empty($nit_err)) ? 'has-error' : ''; ?>">
             <label for="inputNit-update">Número de documento</label>
@@ -153,11 +164,19 @@ include('../../includes/navbar.php');
             <span id="phonenumber-error"class="help-block text-danger"><?php echo $phonenumber_err; ?></span>
           </div>
           <div class="form-label-group">
-            <label>Selecciona el rol</label>
+            <label>Rol</label>
             <br>
             <select id="selectpicker" class="selectpicker">
                 <option value="2">Usuario</option>
                 <option value="1">Administrador</option>
+            </select>
+          </div>
+          <div class="form-label-group">
+            <label>Estado</label>
+            <br>
+            <select id="selectpickerState" class="selectpickerState">
+                <option value="Activo">Activo</option>
+                <option value="Inactivo">Inactivo</option>
             </select>
           </div>
           <hr>
@@ -192,6 +211,8 @@ include('../../includes/navbar.php');
 <!--END: Update Modal -->
 
 <?php 
+
 include('../../includes/scripts.php');
+echo '  <script src="../../js/dashboard.js"></script>';
 include('../../includes/footer.php');
 ?>

@@ -1,9 +1,14 @@
 var table;
 var row;
+var idSelected;
+var role;
 $(document).ready(function () {
   $("#alert-row").hide();
   $("#alert-row-scheduler").hide();
   $("#alert-row-user-limit").hide();
+  role = $('#roleuser').val();
+
+  
 
   //Begin: GetUsers
   getUsers();
@@ -76,7 +81,9 @@ $(document).ready(function () {
 
     var data = $('#update-form').serializeArray();
     data.push({ name: "nit", value: $('#inputNit-update').val() });
+    data.push({ name: "id", value: idSelected });
     data.push({ name: 'idRole', value: $('#selectpicker').val() });
+    data.push({ name: 'estado', value: $('#selectpickerState').val() });
     data.push({ name: 'role', value: $("#selectpicker option:selected").text() });
     data.push({ name: 'tag', value: 'update' });//esto permite saber que funcion del php voy a ejecutar
     $.ajax({
@@ -302,9 +309,7 @@ $(document).ready(function () {
       }
     })
       .done(function (res) {// true
-        console.log(res);
         var arrayBuffer = res;
-
         // if you want to access the bytes:
         var byteArray = new Uint8Array(arrayBuffer);
         var blob = new Blob([res], {type: "application/pdf"});
@@ -337,66 +342,124 @@ $(document).ready(function () {
     })
       .done(function (res) {// true
         //Begin: datatable User
-        var table = $('#example').DataTable({
-          data: JSON.parse(res),
-          retrieve: true,
-          responsive: true,
-          columns: [
-            { title: "id", data: "id", visible: false },
-            { title: "id_role", data: "id_role", visible: false },
-            { title: "Cédula", data: "nit" },
-            { title: "Nombre", data: "username" },
-            { title: "Apellidos", data: "lastname" },
-            { title: "Email", data: "email" },
-            { title: "Teléfono", data: "phonenumber" },
-            { title: "Role", data: "role" },
-
-            { title: "Acción" },
-          ],
-          "columnDefs": [{
-            "targets": -1,
-            "data": null,
-            "defaultContent": `
-                            <button class='btn btn-warning edit'><i class="fas fa-edit"></i></button>
-                            <button class='btn btn-danger delete'><i class="far fa-trash-alt"></i></button>
-                            `
-          }],
-          "language": {
-            "sProcessing": "Procesando...",
-            "sLengthMenu": "Mostrar _MENU_ registros",
-            "sZeroRecords": "No se encontraron resultados",
-            "sEmptyTable": "Ningún dato disponible en esta tabla",
-            "sInfo": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
-            "sInfoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
-            "sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
-            "sInfoPostFix": "",
-            "sSearch": "Buscar:",
-            "sUrl": "",
-            "sInfoThousands": ",",
-            "sLoadingRecords": "Cargando...",
-            "oPaginate": {
-              "sFirst": "Primero",
-              "sLast": "Último",
-              "sNext": "Siguiente",
-              "sPrevious": "Anterior"
-            },
-            "oAria": {
-              "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
-              "sSortDescending": ": Activar para ordenar la columna de manera descendente"
+        var table;
+        
+        if(role != 'Administrador'){
+          table = $('#example').DataTable({
+            data: JSON.parse(res),
+            retrieve: true,
+            responsive: true,
+            columns: [
+              { title: "id", data: "id", visible: false },
+              { title: "id_role", data: "id_role", visible: false },
+              { title: "Cédula", data: "nit" },
+              { title: "Nombre", data: "username" },
+              { title: "Apellidos", data: "lastname" },
+              { title: "Email", data: "email" },
+              { title: "Teléfono", data: "phonenumber" },
+              { title: "Role", data: "role" },
+              { title: "Estado", data: "estado" },
+              { title: "Acción" , className: "actions-class" },
+            ],
+            "columnDefs": [{
+              "targets": -1,
+              "data": null,
+              "className": "actions-class",
+              "defaultContent": `
+                              <button class='btn btn-warning edit'><i class="fas fa-edit"></i></button>
+                              `
+            }],
+            "language": {
+              "sProcessing": "Procesando...",
+              "sLengthMenu": "Mostrar _MENU_ registros",
+              "sZeroRecords": "No se encontraron resultados",
+              "sEmptyTable": "Ningún dato disponible en esta tabla",
+              "sInfo": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+              "sInfoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
+              "sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
+              "sInfoPostFix": "",
+              "sSearch": "Buscar:",
+              "sUrl": "",
+              "sInfoThousands": ",",
+              "sLoadingRecords": "Cargando...",
+              "oPaginate": {
+                "sFirst": "Primero",
+                "sLast": "Último",
+                "sNext": "Siguiente",
+                "sPrevious": "Anterior"
+              },
+              "oAria": {
+                "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
+                "sSortDescending": ": Activar para ordenar la columna de manera descendente"
+              }
             }
-          }
-        });
+          });
+        } else {
+            table = $('#example').DataTable({
+            data: JSON.parse(res),
+            retrieve: true,
+            responsive: true,
+            columns: [
+              { title: "id", data: "id", visible: false },
+              { title: "id_role", data: "id_role", visible: false },
+              { title: "Cédula", data: "nit" },
+              { title: "Nombre", data: "username" },
+              { title: "Apellidos", data: "lastname" },
+              { title: "Email", data: "email" },
+              { title: "Teléfono", data: "phonenumber" },
+              { title: "Role", data: "role" },
+              { title: "Estado", data: "estado" },
+              { title: "Acción" , className: "actions-class" },
+            ],
+            "columnDefs": [{
+              "targets": -1,
+              "data": null,
+              "className": "actions-class",
+              "defaultContent": `
+                              <button class='btn btn-warning edit'><i class="fas fa-edit"></i></button>
+                              <button class='btn btn-danger delete'><i class="far fa-trash-alt"></i></button>
+                              `
+            }],
+            "language": {
+              "sProcessing": "Procesando...",
+              "sLengthMenu": "Mostrar _MENU_ registros",
+              "sZeroRecords": "No se encontraron resultados",
+              "sEmptyTable": "Ningún dato disponible en esta tabla",
+              "sInfo": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+              "sInfoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
+              "sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
+              "sInfoPostFix": "",
+              "sSearch": "Buscar:",
+              "sUrl": "",
+              "sInfoThousands": ",",
+              "sLoadingRecords": "Cargando...",
+              "oPaginate": {
+                "sFirst": "Primero",
+                "sLast": "Último",
+                "sNext": "Siguiente",
+                "sPrevious": "Anterior"
+              },
+              "oAria": {
+                "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
+                "sSortDescending": ": Activar para ordenar la columna de manera descendente"
+              }
+            }
+          });
+        }
 
         $('#example tbody').on('click', '.edit', function () {
           let data = table.row($(this).parents('tr')).data();
           row = table.row($(this).parents('tr'));
+          console.log(data.id);
+          idSelected = data.id;
+          $('#id-update').val(data.id);
           $('#inputName-update').val(data.username);
           $('#inputNit-update').val(data.nit);
           $('#inputLastName-update').val(data.lastname);
           $('#inputPhoneNumber-update').val(data.phonenumber);
           $('#inputEmail-update').val(data.email);
           $(".selectpicker").val(data.id_role);
-
+          $(".selectpickerState").val(data.estado);
           $('#update').show();
           $('#updateModal').modal('show');
         });

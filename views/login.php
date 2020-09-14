@@ -1,5 +1,19 @@
 <?php
- require '../admin/login.php'
+ require '../admin/login.php';
+  if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+  }
+if(isset($_SESSION['loggedin'])){
+
+  if($_SESSION['loggedin']){
+    $user = $_SESSION['user'];
+    if($user['role'] == 'Usuario'){
+      header('Location: views/user/dashboard.user');
+    } else {
+      header('Location: views/dashboard/dashboard');
+    }
+  }
+}
 ?>
 
 <!DOCTYPE html>
@@ -23,8 +37,11 @@
     <div class="row">
       <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
         <div class="card card-signin my-5">
+        <div class="text-center">
+            <img  id="banner" src="../img/banner_register-350.jpg" alt="Bienvenidos a Indesa" >
+          </div>
           <div class="card-body">
-            <h5 class="card-title text-center">Sign In</h5>
+            <h5 class="card-title text-center">Inicio de sesión</h5>
             <form class="form-signin" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
               <div class="form-label-group <?php echo (!empty($nit_err)) ? 'has-error' : ''; ?>">
                 <input type="text" id="inputEmail" 
@@ -42,12 +59,7 @@
                 <label for="password">Contraseña</label>
                 <span class="help-block"><?php echo $password_err; ?></span>
               </div>
-
-              <div class="custom-control custom-checkbox mb-3">
-                <input type="checkbox" class="custom-control-input" id="customCheck1">
-                <label class="custom-control-label" for="customCheck1">Remember password</label>
-              </div>
-              <button class="btn btn-lg btn-primary btn-block text-uppercase" type="submit" value="login">Login</button>
+              <button class="btn btn-lg btn-primary btn-block text-uppercase" type="submit" value="login">Ingresar</button>
             </form>
           </div>
         </div>

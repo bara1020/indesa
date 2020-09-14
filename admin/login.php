@@ -4,7 +4,7 @@ session_start();
  
 // Check if the user is already logged in, if yes then redirect him to welcome page
 if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true){
-    header("location: welcome.php");
+    header("location: login.php");
     exit;
 }
  
@@ -55,10 +55,12 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                         $nit = $row["nit"];
                         $role = $row["role"];
                         $hashed_password = $row["password"];
-                        echo "error".   $hashed_password;
                         if(password_verify($password, $hashed_password)){
                             // Password is correct, so start a new session
-                            session_start();
+                            if (session_status() == PHP_SESSION_NONE) {
+                                session_start();
+                              }
+                          
                             
                             // Store data in session variables
                             $_SESSION["loggedin"] = true;
@@ -66,11 +68,10 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                             $_SESSION["nit"] = $nit;  
                             $_SESSION["role"] = $role;                           
                             $_SESSION["user"] = $row;
-
-                            if($role == 1){
-                                header("location: ../views/dashboard/dashboard.php");
-                            } else {
+                            if($role == 'Usuario'){
                                 header("location: ../../views/user/dashboard-user.php");
+                            } else {
+                                header("location: ../views/dashboard/admin-user.php");
                             }
                             // Redirect user to welcome page
                         } else{

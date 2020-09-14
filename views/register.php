@@ -31,10 +31,12 @@
 
     <div class="container">
         <div class="row">
-          <div class="col-md-8 mx-auto">
-            <div class="card card-signin my-5 p-4">
-              <a href="https://www.indesa.gov.co/">
-              <img id="banner-register" src="./img/banner_register.jpg" alt="Bienvenismos a Indesa">
+          <div class="col-md-7 mx-auto">
+            <div class="card card-signin my-5 p-4 ">
+              <div class="text-center">
+                <a href="https://www.indesa.gov.co/">
+                <img id="banner" src="./img/banner_register-350.jpg" alt="Bienvenismos a Indesa">
+              </div>
             </a>
               <div class="form-label-group mt-3 mb-3 text-center">
                   <h2>
@@ -113,6 +115,9 @@
               <button id="register" class="btn btn-lg btn-primary btn-block text-uppercase" type="submit"
                 value="registrar">Registrar
               </button>
+              <div class="text-right mt-2">
+                <p>Ya tienes una cuenta? <a href="views/login.php" class="text-secundary cursor-pointer">Ingresa aquí</a></p>
+              </div>
                 </form>
             </div>
           </div>

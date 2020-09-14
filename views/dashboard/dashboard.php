@@ -1,5 +1,19 @@
 <?php 
+ require '../../admin/functions.php';
+  
+ if (session_status() == PHP_SESSION_NONE) {
+  session_start();
+}
 
+if(!$_SESSION['loggedin']){
+  header('Location: ./login');
+}
+$user = $_SESSION['user'];
+$username = $user['username'];
+$nit = $user['nit'];
+$lastname = $user['lastname'];
+$phonenumber = $user['phonenumber'];
+$email = $user['email'];
 include('../../includes/header.php');
 include('../../includes/navbar.php');
 ?>
@@ -7,302 +21,190 @@ include('../../includes/navbar.php');
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css">
 
 
-        <!-- Begin Page Content -->
-        <div class="container-fluid">
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 text-center">
+      <!-- Button trigger modal -->
+      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#registerModal">
+        Agregar usuario
+      </button>
+    </div>
+  </div>
+  <div id="alert-row" class="row">
+    <div class="col-md-12">
+      <div class="alert alert-success" role="alert">
+        <strong>EL usuario se registró correctamente</strong>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+    <iframe id="frame1" style="width:150px;height:150px"></iframe>
+     <!-- <form class="form-signin" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
+        <button type="button" name="" id="ver" class="btn btn-primary" btn-lg btn-block>ver archivo</button>
+      </form>-->
+      <a href="../../admin/download.php?file=fichero.pdf">Descargar fichero</a>
 
-          <!-- Page Heading -->
-          <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
-            <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
+    <table id="example" class="table table-striped table-bordered" width="100%"></table>
+    </div>
+  </div>
+</div>
+
+
+<!--BEGIN: Register Modal -->
+<div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="registerModalLabel">Formulario de registro</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="register-form" class="form-signin" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
+          <div class="form-label-group <?php echo (!empty($nit_err)) ? 'has-error' : ''; ?>">
+            <label for="inputNit">Número de documento</label>
+            <input type="text" id="inputNit" class="form-control" autofocus
+              value="<?php echo $nit; ?>" name="nit">
+            <span id="nit-error" class="help-block text-danger"><?php echo $nit_err; ?></span>
           </div>
-
-          <!-- Content Row -->
-          <div class="row">
-
-            <!-- Earnings (Monthly) Card Example -->
-            <div class="col-xl-3 col-md-6 mb-4">
-              <div class="card border-left-primary shadow h-100 py-2">
-                <div class="card-body">
-                  <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                      <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Earnings (Monthly)</div>
-                      <div class="h5 mb-0 font-weight-bold text-gray-800">$40,000</div>
-                    </div>
-                    <div class="col-auto">
-                      <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Earnings (Monthly) Card Example -->
-            <div class="col-xl-3 col-md-6 mb-4">
-              <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                  <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                      <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Earnings (Annual)</div>
-                      <div class="h5 mb-0 font-weight-bold text-gray-800">$215,000</div>
-                    </div>
-                    <div class="col-auto">
-                      <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Earnings (Monthly) Card Example -->
-            <div class="col-xl-3 col-md-6 mb-4">
-              <div class="card border-left-info shadow h-100 py-2">
-                <div class="card-body">
-                  <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                      <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Tasks</div>
-                      <div class="row no-gutters align-items-center">
-                        <div class="col-auto">
-                          <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">50%</div>
-                        </div>
-                        <div class="col">
-                          <div class="progress progress-sm mr-2">
-                            <div class="progress-bar bg-info" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-auto">
-                      <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Pending Requests Card Example -->
-            <div class="col-xl-3 col-md-6 mb-4">
-              <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body">
-                  <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                      <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending Requests</div>
-                      <div class="h5 mb-0 font-weight-bold text-gray-800">18</div>
-                    </div>
-                    <div class="col-auto">
-                      <i class="fas fa-comments fa-2x text-gray-300"></i>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div class="form-label-group <?php echo (!empty($username_err)) ? 'has-error' : ''; ?>">
+            <label for="inputName">Nombre</label>
+            <input type="text" id="inputName" class="form-control"  autofocus
+              value="<?php echo $username; ?>" name="username">
+            <span id="username-error"class="help-block text-danger"><?php echo $username_err; ?></span>
           </div>
-
-          <!-- Content Row -->
-
-          <div class="row">
-
-            <!-- Area Chart -->
-            <div class="col-xl-8 col-lg-7">
-              <div class="card shadow mb-4">
-                <!-- Card Header - Dropdown -->
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                  <h6 class="m-0 font-weight-bold text-primary">Earnings Overview</h6>
-                  <div class="dropdown no-arrow">
-                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                      <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
-                      <div class="dropdown-header">Dropdown Header:</div>
-                      <a class="dropdown-item" href="#">Action</a>
-                      <a class="dropdown-item" href="#">Another action</a>
-                      <div class="dropdown-divider"></div>
-                      <a class="dropdown-item" href="#">Something else here</a>
-                    </div>
-                  </div>
-                </div>
-                <!-- Card Body -->
-                <div class="card-body">
-                  <div class="chart-area">
-                    <canvas id="myAreaChart"></canvas>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Pie Chart -->
-            <div class="col-xl-4 col-lg-5">
-              <div class="card shadow mb-4">
-                <!-- Card Header - Dropdown -->
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                  <h6 class="m-0 font-weight-bold text-primary">Revenue Sources</h6>
-                  <div class="dropdown no-arrow">
-                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                      <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
-                      <div class="dropdown-header">Dropdown Header:</div>
-                      <a class="dropdown-item" href="#">Action</a>
-                      <a class="dropdown-item" href="#">Another action</a>
-                      <div class="dropdown-divider"></div>
-                      <a class="dropdown-item" href="#">Something else here</a>
-                    </div>
-                  </div>
-                </div>
-                <!-- Card Body -->
-                <div class="card-body">
-                  <div class="chart-pie pt-4 pb-2">
-                    <canvas id="myPieChart"></canvas>
-                  </div>
-                  <div class="mt-4 text-center small">
-                    <span class="mr-2">
-                      <i class="fas fa-circle text-primary"></i> Direct
-                    </span>
-                    <span class="mr-2">
-                      <i class="fas fa-circle text-success"></i> Social
-                    </span>
-                    <span class="mr-2">
-                      <i class="fas fa-circle text-info"></i> Referral
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div class="form-label-group <?php echo (!empty($lastname_err)) ? 'has-error' : ''; ?>">
+            <label for="inputLastName">Apellidos</label>
+            <input type="text" id="inputLastName" class="form-control"  autofocus
+              value="<?php echo $lastname; ?>" name="lastname">
+            <span id="lastname-error"class="help-block text-danger"><?php echo $lastname_err; ?></span>
           </div>
-
-          <!-- Content Row -->
-          <div class="row">
-
-            <!-- Content Column -->
-            <div class="col-lg-6 mb-4">
-
-              <!-- Project Card Example -->
-              <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                  <h6 class="m-0 font-weight-bold text-primary">Projects</h6>
-                </div>
-                <div class="card-body">
-                  <h4 class="small font-weight-bold">Server Migration <span class="float-right">20%</span></h4>
-                  <div class="progress mb-4">
-                    <div class="progress-bar bg-danger" role="progressbar" style="width: 20%" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
-                  </div>
-                  <h4 class="small font-weight-bold">Sales Tracking <span class="float-right">40%</span></h4>
-                  <div class="progress mb-4">
-                    <div class="progress-bar bg-warning" role="progressbar" style="width: 40%" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
-                  </div>
-                  <h4 class="small font-weight-bold">Customer Database <span class="float-right">60%</span></h4>
-                  <div class="progress mb-4">
-                    <div class="progress-bar" role="progressbar" style="width: 60%" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
-                  </div>
-                  <h4 class="small font-weight-bold">Payout Details <span class="float-right">80%</span></h4>
-                  <div class="progress mb-4">
-                    <div class="progress-bar bg-info" role="progressbar" style="width: 80%" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
-                  </div>
-                  <h4 class="small font-weight-bold">Account Setup <span class="float-right">Complete!</span></h4>
-                  <div class="progress">
-                    <div class="progress-bar bg-success" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Color System -->
-              <div class="row">
-                <div class="col-lg-6 mb-4">
-                  <div class="card bg-primary text-white shadow">
-                    <div class="card-body">
-                      Primary
-                      <div class="text-white-50 small">#4e73df</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-lg-6 mb-4">
-                  <div class="card bg-success text-white shadow">
-                    <div class="card-body">
-                      Success
-                      <div class="text-white-50 small">#1cc88a</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-lg-6 mb-4">
-                  <div class="card bg-info text-white shadow">
-                    <div class="card-body">
-                      Info
-                      <div class="text-white-50 small">#36b9cc</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-lg-6 mb-4">
-                  <div class="card bg-warning text-white shadow">
-                    <div class="card-body">
-                      Warning
-                      <div class="text-white-50 small">#f6c23e</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-lg-6 mb-4">
-                  <div class="card bg-danger text-white shadow">
-                    <div class="card-body">
-                      Danger
-                      <div class="text-white-50 small">#e74a3b</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-lg-6 mb-4">
-                  <div class="card bg-secondary text-white shadow">
-                    <div class="card-body">
-                      Secondary
-                      <div class="text-white-50 small">#858796</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-lg-6 mb-4">
-                  <div class="card bg-light text-black shadow">
-                    <div class="card-body">
-                      Light
-                      <div class="text-black-50 small">#f8f9fc</div>
-                    </div>
-                  </div>
-              </div>
-              <div class="col-lg-6 mb-4">
-                <div class="card bg-dark text-white shadow">
-                  <div class="card-body">
-                      Dark
-                      <div class="text-white-50 small">#5a5c69</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            </div>
-
-            <div class="col-lg-6 mb-4">
-
-              <!-- Illustrations -->
-              <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                  <h6 class="m-0 font-weight-bold text-primary">Illustrations</h6>
-                </div>
-                <div class="card-body">
-                  <div class="text-center">
-                    <img class="img-fluid px-3 px-sm-4 mt-3 mb-4" style="width: 25rem;" src="img/undraw_posting_photo.svg" alt="">
-                  </div>
-                  <p>Add some quality, svg illustrations to your project courtesy of <a target="_blank" rel="nofollow" href="https://undraw.co/">unDraw</a>, a constantly updated collection of beautiful svg images that you can use completely free and without attribution!</p>
-                  <a target="_blank" rel="nofollow" href="https://undraw.co/">Browse Illustrations on unDraw &rarr;</a>
-                </div>
-              </div>
-
-              <!-- Approach -->
-              <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                  <h6 class="m-0 font-weight-bold text-primary">Development Approach</h6>
-                </div>
-                <div class="card-body">
-                  <p>SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce CSS bloat and poor page performance. Custom CSS classes are used to create custom components and custom utility classes.</p>
-                  <p class="mb-0">Before working with this theme, you should become familiar with the Bootstrap framework, especially the utility classes.</p>
-                </div>
-              </div>
-
-            </div>
+          <div class="form-label-group <?php echo (!empty($email_err)) ? 'has-error' : ''; ?>">
+            <label for="inputEmail">Email</label>
+            <input type="email" id="inputEmail" class="form-control"  autofocus
+              value="<?php echo $email; ?>" name="email" required>
+            <span id="email-error"class="help-block text-danger"><?php echo $email_err; ?></span>
           </div>
+          <div class="form-label-group <?php echo (!empty($phonenumber_err)) ? 'has-error' : ''; ?>">
+            <label for="inputPhoneNumber">Teléfono</label>
+            <input type="phonenumber" id="inputPhoneNumber" class="form-control"  autofocus
+              value="<?php echo $phonenumber; ?>" name="phonenumber">
+            <span id="phonenumber-error"class="help-block text-danger"><?php echo $phonenumber_err; ?></span>
+          </div>
+          <div class="form-label-group <?php echo (!empty($password_err)) ? 'has-error' : ''; ?>">
+            <label>Contraseña</label>
+            <input type="password" name="password" class="form-control" value="<?php echo $password; ?>">
+            <span id="password-error" class="help-block text-danger"><?php echo $password_err; ?></span>
+          </div>
+          <div class="form-label-group <?php echo (!empty($confirm_password_err)) ? 'has-error' : ''; ?>">
+            <label>Confirma la contraseña</label>
+            <input type="password" name="confirm_password" class="form-control"
+              value="<?php echo $confirm_password; ?>">
+            <span id="confirm-password-error" class="help-block text-danger"><?php echo $confirm_password_err; ?></span>
+          </div>
+          <div class="form-label-group">
+            <label>Selecciona el rol</label>
+            <br>
+            <select class="selectpicker">
+                <option value="2">Usuario</option>
+                <option value="1">Administrador</option>
+            </select>
+          </div>
+          <hr>
+          <button id="register" class="btn btn-lg btn-primary btn-block text-uppercase" type="submit" value="registrar">Registrar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!--END: Register Modal -->
+
+<!--BEGIN: Update Modal -->
+<div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="updateModalLabel">Actualización de datos</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="update-form" class="form-signin" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
+        <div class="form-label-group d-none">
+            <input type="text" id="inputId-update" class="form-control" autofocus
+              value="<?php echo $id; ?>" name="id" >
+          </div>
+          <div class="form-label-group <?php echo (!empty($nit_err)) ? 'has-error' : ''; ?>">
+            <label for="inputNit-update">Número de documento</label>
+            <input type="text" id="inputNit-update" class="form-control" autofocus
+              value="<?php echo $nit; ?>" name="nit" disabled>
+            <span id="nit-error" class="help-block text-danger"><?php echo $nit_err; ?></span>
+          </div>
+          <div class="form-label-group <?php echo (!empty($username_err)) ? 'has-error' : ''; ?>">
+            <label for="inputName-update">Nombre</label>
+            <input type="text" id="inputName-update" class="form-control"  autofocus
+              value="<?php echo $username; ?>" name="username">
+            <span id="username-error"class="help-block text-danger"><?php echo $username_err; ?></span>
+          </div>
+          <div class="form-label-group <?php echo (!empty($lastname_err)) ? 'has-error' : ''; ?>">
+            <label for="inputLastName-update">Apellidos</label>
+            <input type="text" id="inputLastName-update" class="form-control"  autofocus
+              value="<?php echo $lastname; ?>" name="lastname">
+            <span id="lastname-error"class="help-block text-danger"><?php echo $lastname_err; ?></span>
+          </div>
+          <div class="form-label-group <?php echo (!empty($email_err)) ? 'has-error' : ''; ?>">
+            <label for="inputEmail-update">Email</label>
+            <input type="email" id="inputEmail-update" class="form-control"  autofocus
+              value="<?php echo $email; ?>" name="email" required>
+            <span id="email-error"class="help-block text-danger"><?php echo $email_err; ?></span>
+          </div>
+          <div class="form-label-group <?php echo (!empty($phonenumber_err)) ? 'has-error' : ''; ?>">
+            <label for="inputPhoneNumber-update">Teléfono</label>
+            <input type="phonenumber" id="inputPhoneNumber-update" class="form-control"  autofocus
+              value="<?php echo $phonenumber; ?>" name="phonenumber">
+            <span id="phonenumber-error"class="help-block text-danger"><?php echo $phonenumber_err; ?></span>
+          </div>
+          <div class="form-label-group">
+            <label>Selecciona el rol</label>
+            <br>
+            <select id="selectpicker" class="selectpicker">
+                <option value="2">Usuario</option>
+                <option value="1">Administrador</option>
+            </select>
+          </div>
+          <hr>
+          <button id="update" class="btn btn-lg btn-primary btn-block text-uppercase" type="submit" value="actualizar">Actualizar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!--END: Update Modal -->
+
+<!--BEGIN: Update Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Eliminar usuario</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <h6>Estas seguro que deseas eliminar este usuario?</h6>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        <button id="delete" type="button" class="btn btn-danger">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!--END: Update Modal -->
 
 <?php 
 

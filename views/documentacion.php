@@ -1,5 +1,5 @@
 Parte del formlario de registro que de quitó 
-<div class="form-label-group mt-3 <?php echo (!empty($phonenumber_err)) ? 'has-error' : ''; ?>">
+              <div class="form-label-group mt-3 <?php echo (!empty($phonenumber_err)) ? 'has-error' : ''; ?>">
                 <label for="uploadedFile">Cargar Consentimiento Firmado</label>
                 <br>
                 <input style="width:100%" id="uploadedFile" type="file" name="uploadedFile"
@@ -56,6 +56,7 @@ Formulario de update que se tenía:
                 value="update">Registrar
               </button>
               </form>
+              
 
 
 

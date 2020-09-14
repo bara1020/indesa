@@ -451,9 +451,9 @@ function updateUser(){
 		// Prepare an insert statement
 		if(isset($_POST["idRole"])){
 			$param_role = $_POST["idRole"];
-			$sql = "UPDATE users set  username = :username, lastname = :lastname, email = :email, phonenumber = :phonenumber, role = :roleId where id = :id";
+			$sql = "UPDATE users set  username = :username, lastname = :lastname, email = :email, phonenumber = :phonenumber, role = :roleId, estado = :estado where id = :id";
 		} else {
-			$sql = "UPDATE users set  username = :username, lastname = :lastname, email = :email, phonenumber = :phonenumber where id = :id";
+			$sql = "UPDATE users set  username = :username, lastname = :lastname, email = :email, phonenumber = :phonenumber, estado = 'Activo' where id = :id";
 		} 
          
         if($stmt = $pdo->prepare($sql)){
@@ -461,15 +461,17 @@ function updateUser(){
 			$param_username = $_POST["username"];
 			$param_lastname = $_POST["lastname"];
 			$param_email = $_POST["email"];
+			$param_estado = $_POST["estado"];
+			
 			
 			$param_phonenumber = $_POST["phonenumber"];
 			$param_id = $_POST["id"];
-			
 			$stmt->bindParam(":id", $param_id, PDO::PARAM_STR);
 			$stmt->bindParam(":username", $param_username, PDO::PARAM_STR);
             $stmt->bindParam(":lastname", $param_lastname, PDO::PARAM_STR);
             $stmt->bindParam(":email", $param_email, PDO::PARAM_STR);
 			$stmt->bindParam(":phonenumber", $param_phonenumber, PDO::PARAM_STR);
+			$stmt->bindParam(":estado", $param_estado, PDO::PARAM_STR);
 			if(isset($_POST["idRole"])){
 				$stmt->bindParam(":roleId", intval($param_role), PDO::PARAM_INT);
 			}
@@ -489,6 +491,7 @@ function updateUser(){
 									"email" => $param_email,
 									"phonenumber" => $param_phonenumber,
 									"role" => $_POST['role'],
+									"estado" => $_POST['estado'],
 									"id_role" => $param_role,
 								);
 					
@@ -550,7 +553,7 @@ function deleteUser(){
 ##Captura todos los usuarios que se encuentran registrados en la plataforma
 function getUsers(){
 	$pdo = getConnection();
-	$stmt = $pdo->prepare("SELECT u.id, u.username, u.nit, u.lastname, u.email, u.phonenumber, r.id as id_role , r.name as role from users u, roles r where u.role = r.id order by created_at desc"); 
+	$stmt = $pdo->prepare("SELECT u.id, u.username, u.nit, u.lastname, u.email, u.phonenumber, r.id as id_role , r.name as role, u.estado from users u, roles r where u.role = r.id order by created_at desc"); 
 	$stmt->execute();
 
 	// set the resulting array to associative

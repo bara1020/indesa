@@ -1,5 +1,18 @@
 <?php 
  require '../../admin/functions.php';
+ if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+  }
+ 
+  if(!$_SESSION['loggedin']){
+    header('Location: ../login');
+  }
+  $user = $_SESSION['user'];
+  $username = $user['username'];
+  $nit = $user['nit'];
+  $lastname = $user['lastname'];
+  $phonenumber = $user['phonenumber'];
+  $email = $user['email'];
 include('../../includes/header.php');
 include('../../includes/navbar.php');
 ?>

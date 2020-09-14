@@ -32,7 +32,8 @@ function getSchedulerDoed(){
     $pdo = getConnection();
     // Prepare a select statement
     $sql = "SELECT schedulerFrom, schedulerTo FROM booking WHERE userId = :id and date = :date";
-    $nextDay = date('Y-m-d', strtotime(' +1 day'));
+    //$nextDay = date('Y-m-d', strtotime(' +1 day'));
+    $nextDay = date("Y/m/d");
     if (session_status() == PHP_SESSION_NONE) {
         session_start();
     }
@@ -43,9 +44,9 @@ function getSchedulerDoed(){
 
         // Attempt to execute the prepared statement
         if($stmt->execute()){
-            
             $stmt = $stmt->fetch();
-            $_SESSION['success'] = 'Tu hora de reserva es de '. $stmt['schedulerFrom'] . ' a ' . $stmt['schedulerTo']; 
+            if($stmt['schedulerFrom'] != "")
+                $_SESSION['success'] = 'Tienes la reserva el '. $nextDay . ' de '. $stmt['schedulerFrom'] . ' a ' . $stmt['schedulerTo']; 
         } else{
             echo "Ocurrió un error inesperado. Por favor intentalo de nuevo.";
         }

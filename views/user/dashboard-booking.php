@@ -84,13 +84,13 @@
                       <input type="text" id="schedulerToupdate" class="form-control" autofocus value="<?php echo $schedulerTo; ?>"
                         name="schedulerToUpdate" style="display:none">
                       <input type="text" id="dateupdate" class="form-control" autofocus value="<?php echo $date; ?>"
-                        name="dateupdate" style="display:none">';
+                        name="dateupdate" style="display:none">
+                        <hr>
+                        <button id="updatebooking" class="btn btn-lg btn-primary btn-block text-uppercase" type="submit"
+                          value="update">Registrar
+                        </button>';
                 }
                ?>
-            <hr>
-            <button id="updatebooking" class="btn btn-lg btn-primary btn-block text-uppercase" type="submit"
-              value="update">Registrar
-            </button>
           </form>
         </div>
       </div>

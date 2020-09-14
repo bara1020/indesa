@@ -1,11 +1,11 @@
 
 $(document).ready(function(){
         $("#response-message").hide();
-
     //Ejecución del update user
       $('#update-perfil').click(function (e) {
+        console.log('adsad');
+            console.log(data);
         e.preventDefault();
-    
         var data = $('#update-form').serializeArray();
         data.push({ name: "nit", value: $('#inputNit').val() });
         data.push({ name: 'tag', value: 'update' });//esto permite saber que funcion del php voy a ejecutar

@@ -166,3 +166,7 @@
   background-color: #D58402;
   border-color: #D58402;
 }
+
+.cursor-pointer:hover{
+  cursor: pointer;
+}

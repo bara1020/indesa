@@ -1,5 +1,9 @@
 <?php
- require '../../admin/login.php'
+ require '../../admin/login.php';
+ if (session_status() == PHP_SESSION_NONE) {
+  session_start();
+}
+
 ?>
 
 <!DOCTYPE html>
