@@ -8,9 +8,9 @@ if(isset($_SESSION['loggedin'])){
   if($_SESSION['loggedin']){
     $user = $_SESSION['user'];
     if($user['role'] == 'Usuario'){
-      header('Location: views/user/dashboard.user');
+      header('Location: user/dashboard-user');
     } else {
-      header('Location: views/dashboard/dashboard');
+      header('Location: dashboard/dashboard');
     }
   }
 }

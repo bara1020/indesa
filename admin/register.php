@@ -257,7 +257,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                         $id = $stmtSelect['id'];
                         session_start();
                         $_SESSION["user"] = $stmtSelect;
-                        // Redirect user to welcome page
                         header("location: views/user/dashboard-user.php");
 					} else{
 						echo "Ocurrió un error inesperado. Por favor intentalo de nuevo.";

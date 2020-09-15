@@ -25,7 +25,7 @@ include('../../includes/navbar.php');
   <div class="row">
     <div class="col-md-12 text-center">
       <!-- Button trigger modal -->
-      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#registerModal">
+      <button id="btn-register" type="button" class="btn btn-primary" data-toggle="modal" data-target="#registerModal">
         Agregar usuario
       </button>
     </div>
@@ -162,6 +162,18 @@ include('../../includes/navbar.php');
             <input type="phonenumber" id="inputPhoneNumber-update" class="form-control"  autofocus
               value="<?php echo $phonenumber; ?>" name="phonenumber">
             <span id="phonenumber-error"class="help-block text-danger"><?php echo $phonenumber_err; ?></span>
+          </div>
+          <div id="show-document" class="form-label-group mt-3 ">
+                <a id="btn-show-document"class="btn btn-info btn-block" href="../../admin/download.php?file=Protocolo_gimnasio_Indesa.pdf">Ver
+                  Consentimiento</a>
+          </div>
+          <div class="form-label-group mt-3">
+              <label for="uploadedFile">Cargar Consentimiento Firmado</label>
+              <br>
+              <input style="width:100%" id="uploadedFile" type="file" name="uploadedFile"
+                placeholder="Selecciona un archivo" />
+              <br>
+              <span id="file_err" class="help-block text-danger "><?php echo $file_err; ?></span>
           </div>
           <div class="form-label-group">
             <label>Rol</label>

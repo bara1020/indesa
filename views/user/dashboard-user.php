@@ -27,7 +27,7 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-body">
-                        <h1 class="card-title text-center">Bienvenido <?php echo $user['username'];?></h1>
+                        <h1 class="card-title text-center text-secundary">Bienvenido <?php echo $user['username'];?></h1>
                         <form id="update-form" class="form-signin" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>"
                               method="post">
                               <input type="text" class="form-control process" autofocus value="<?php echo $_SESSION["id"]; ?>" name="id"

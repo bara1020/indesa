@@ -2,7 +2,7 @@
 	require 'config.php';
 	session_start();
 	$security = 0;
-	if(isset($_SESSION["role"]) && $_SESSION["role"] == "Administrador"){
+	if(isset($_SESSION["role"]) && ($_SESSION["role"] == "Administrador" || $_SESSION["role"] == "Usuario")){
 		$security = 1;
 	} else {
 		$response = new Response();
@@ -25,6 +25,7 @@
 	$phonenumber = "";
 	$id ="";
 	$role = "";
+	$file = "";
 
 	$nit_err = "";
 	$password_err = "";
@@ -34,6 +35,7 @@
 	$email_err = "";
 	$phonenumber_err = "";
 	$role_err = "";
+	$file_err = "";
 
 	// Define variables and initialize with empty values
 	$mondayPicoCedula = "";
@@ -109,6 +111,7 @@
 	}
 
 	if(isset($tag) && $tag !== '' && $security === 1){
+		
 		switch ($tag) {
 			case 'destroySession':{
 				destroySession();
@@ -372,6 +375,7 @@ function registerUser(){
 
 #Función para actualizar el usuario
 function updateUser(){
+	
 	$pdo = getConnection();
 	$response = new Response();
 	$response->status = false;
@@ -381,12 +385,12 @@ function updateUser(){
 
     // Validate id
     if(empty(limpiarDatos($_POST["nit"]))){
+        
 		$nit_err = "Por favor ingrese el número de documento.";
 		array_push($response->message,array('id' => "nit-error", 'message' => $nit_err ));
     } else{
         // Prepare a select statement
         $sql = "SELECT id FROM users WHERE nit = :nit";
-        
         if($stmt = $pdo->prepare($sql)){
             // Bind variables to the prepared statement as parameters
             $stmt->bindParam(":nit", $param_nit, PDO::PARAM_STR);
@@ -444,7 +448,7 @@ function updateUser(){
         $phonenumber = limpiarDatos($_POST["phonenumber"]);
     }
 
-  
+	
     // Check input errors before inserting in database
     if(empty($nit_err) && empty($password_err) && empty($confirm_password_err) && empty($phonenumber_err)){
         
@@ -453,7 +457,7 @@ function updateUser(){
 			$param_role = $_POST["idRole"];
 			$sql = "UPDATE users set  username = :username, lastname = :lastname, email = :email, phonenumber = :phonenumber, role = :roleId, estado = :estado where id = :id";
 		} else {
-			$sql = "UPDATE users set  username = :username, lastname = :lastname, email = :email, phonenumber = :phonenumber, estado = 'Activo' where id = :id";
+			$sql = "UPDATE users set  username = :username, lastname = :lastname, email = :email, phonenumber = :phonenumber where id = :id";
 		} 
          
         if($stmt = $pdo->prepare($sql)){
@@ -461,7 +465,6 @@ function updateUser(){
 			$param_username = $_POST["username"];
 			$param_lastname = $_POST["lastname"];
 			$param_email = $_POST["email"];
-			$param_estado = $_POST["estado"];
 			
 			
 			$param_phonenumber = $_POST["phonenumber"];
@@ -471,8 +474,11 @@ function updateUser(){
             $stmt->bindParam(":lastname", $param_lastname, PDO::PARAM_STR);
             $stmt->bindParam(":email", $param_email, PDO::PARAM_STR);
 			$stmt->bindParam(":phonenumber", $param_phonenumber, PDO::PARAM_STR);
-			$stmt->bindParam(":estado", $param_estado, PDO::PARAM_STR);
+			
+			
 			if(isset($_POST["idRole"])){
+				$param_estado = $_POST["estado"];
+				$stmt->bindParam(":estado", $param_estado, PDO::PARAM_STR);
 				$stmt->bindParam(":roleId", intval($param_role), PDO::PARAM_INT);
 			}
 
@@ -505,6 +511,7 @@ function updateUser(){
 								);
 				}
 				updateSession();
+				//uploadFile();
 				array_push($response->message,array('id' => "response-message", 'message' => "El usuario se actualizó correctamente!", "data" => $data ));
 				echo json_encode($response);
             } else{
@@ -520,6 +527,44 @@ function updateUser(){
     // Close connection
 	unset($pdo);
 }
+}
+
+function uploadFile(){
+	if (isset($_POST['file'])) {
+		echo $_POST['file']['name'];
+		$fileTmpPath = $_POST['file']['tmp_name'];
+        $fileName = $_POST['file']['name'];
+        $fileSize = $_POST['file']['size'];
+        $fileType = $_POST['file']['type'];
+		$fileNameCmps = explode(".", $fileName);
+		echo $fileType;
+	/*if (isset($_POST['uploadedFile']) && $_FILES['uploadedFile']['error'] === UPLOAD_ERR_OK ) {
+        // get details of the uploaded file
+        $fileTmpPath = $_FILES['uploadedFile']['tmp_name'];
+        $fileName = $_FILES['uploadedFile']['name'];
+        $fileSize = $_FILES['uploadedFile']['size'];
+        $fileType = $_FILES['uploadedFile']['type'];
+        $fileNameCmps = explode(".", $fileName);*/
+        $fileExtension = strtolower(end($fileNameCmps));
+        $newFileName = md5(time() . $fileName) . '.' . $fileExtension;
+        $allowedfileExtensions = array('jpg', 'png', 'pdf');
+        if (in_array($fileExtension, $allowedfileExtensions)) {
+            // directory in which the uploaded file will be moved
+            $uploadFileDir = '../uploaded_files/';
+            $dest_path = $uploadFileDir . $newFileName;
+            
+            if(move_uploaded_file($fileTmpPath, $dest_path))
+            {
+            $message ='File is successfully uploaded.';
+            }
+            else
+            {
+            $message = 'There was some error moving the file to upload directory. Please make sure the upload directory is writable by web server.';
+            }
+        } else {
+            $file_err = 'Solo se admiten archivo en formato jpg, png y pdf';
+        }
+    }
 }
 
 function updateSession(){
@@ -553,7 +598,7 @@ function deleteUser(){
 ##Captura todos los usuarios que se encuentran registrados en la plataforma
 function getUsers(){
 	$pdo = getConnection();
-	$stmt = $pdo->prepare("SELECT u.id, u.username, u.nit, u.lastname, u.email, u.phonenumber, r.id as id_role , r.name as role, u.estado from users u, roles r where u.role = r.id order by created_at desc"); 
+	$stmt = $pdo->prepare("SELECT u.id, u.username, u.nit, u.lastname, u.email, u.phonenumber, r.id as id_role , r.name as role, u.estado, u.consent from users u, roles r where u.role = r.id order by created_at desc"); 
 	$stmt->execute();
 
 	// set the resulting array to associative

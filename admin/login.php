@@ -4,8 +4,11 @@ session_start();
  
 // Check if the user is already logged in, if yes then redirect him to welcome page
 if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true){
-    header("location: login.php");
-    exit;
+    if($_SESSION['role'] == 'Usuario')
+        header("location: ../../views/user/dashboard-user.php");
+    else
+         header("location: ../views/dashboard/admin-user.php");
+        exit;
 }
  
 // Include config file

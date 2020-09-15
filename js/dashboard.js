@@ -6,7 +6,10 @@ $(document).ready(function () {
   $("#alert-row").hide();
   $("#alert-row-scheduler").hide();
   $("#alert-row-user-limit").hide();
+  $('#show-document').hide();
   role = $('#roleuser').val();
+
+  
 
   
 
@@ -21,6 +24,8 @@ $(document).ready(function () {
   //Begin: getConfiguration
   getConfiguration();
   //End: getConfiguration
+
+
 
 
 
@@ -74,57 +79,57 @@ $(document).ready(function () {
     return false;
   });
 
+  var file;
+  $('#uploadedFile').change(function(e){
+    file = e.target.files[0];
+});
 
-  //Ejecución del update user
-  $('#update').click(function (e) {
-    e.preventDefault();
 
-    var data = $('#update-form').serializeArray();
-    data.push({ name: "nit", value: $('#inputNit-update').val() });
-    data.push({ name: "id", value: idSelected });
-    data.push({ name: 'idRole', value: $('#selectpicker').val() });
-    data.push({ name: 'estado', value: $('#selectpickerState').val() });
-    data.push({ name: 'role', value: $("#selectpicker option:selected").text() });
-    data.push({ name: 'tag', value: 'update' });//esto permite saber que funcion del php voy a ejecutar
+
+//Ejecución del update user
+  $("#update").on('click', function(e){
+    var formData = new FormData();
+    var files = $('#uploadedFile')[0].files[0];
+    formData.append('file',files);
+    formData.append('username',$('#inputName-update').val());
+    formData.append('nit',$('#inputNit-update').val());
+    formData.append('lastname',$('#inputLastName-update').val());
+    formData.append('email',$('#inputEmail-update').val());
+    formData.append('phonenumber',$('#inputPhoneNumber-update').val());
+    formData.append('estado',$('#selectpickerState').val());
+    formData.append('idRole',$('#selectpicker').val());
+    formData.append('id',idSelected);
+    formData.append('role',$("#selectpicker option:selected").text());
     $.ajax({
-      url: '../../admin/functions.php',
-      type: "post",
-      data,
-      beforeSend: function () {
-        $('.fa').css('display', 'inline');
-      }
-    })
-      .done(function (res) {// true
-        $('.help-block').hide();
-        let json = JSON.parse(res);
-        json.message.forEach(element => {
-          $("#" + element.id).text(element.message);
-          $("#" + element.id).show();
-        });
-
-        if (json.status) {
-          row.data(json.message[0].data);
-          $('#updateModal').modal('toggle');
-          $("#updateModal .close").click();
-          $("#update-form")[0].reset();
+        url: '../../admin/update.php',
+        type: 'post',
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function(response) {
+          console.log(response);
           $('.help-block').hide();
-          $("#alert-row").show();
-          setTimeout(function () {
-            $('#alert-row').hide();
-          }, 5000);
+          let json = JSON.parse(response);
+          json.message.forEach(element => {
+            $("#" + element.id).text(element.message);
+            $("#" + element.id).show();
+          });
+  
+          if (json.status) {
+            row.data(json.message[0].data);
+            $('#updateModal').modal('toggle');
+            $("#updateModal .close").click();
+            $("#update-form")[0].reset();
+            $('.help-block').hide();
+            $("#alert-row").show();
+            setTimeout(function () {
+              $('#alert-row').hide();
+            }, 5000);
+          }
         }
-      })
-      .fail(function (e) {// false
-        console.log("Error" + e.responseText);
-      })
-      .always(function () { // seria como un finally
-        setTimeout(function () {
-          $('.fa').hide();
-        }, 1000);
-
-      });
+    });
     return false;
-  });
+});
 
   //Ejecución del update pico y cédula
   $('#update-pico-cedula').click(function (e) {
@@ -402,6 +407,7 @@ $(document).ready(function () {
             columns: [
               { title: "id", data: "id", visible: false },
               { title: "id_role", data: "id_role", visible: false },
+              { title: "consent", data: "consent", visible: false },
               { title: "Cédula", data: "nit" },
               { title: "Nombre", data: "username" },
               { title: "Apellidos", data: "lastname" },
@@ -448,9 +454,9 @@ $(document).ready(function () {
         }
 
         $('#example tbody').on('click', '.edit', function () {
+          $('#show-document').hide();
           let data = table.row($(this).parents('tr')).data();
           row = table.row($(this).parents('tr'));
-          console.log(data.id);
           idSelected = data.id;
           $('#id-update').val(data.id);
           $('#inputName-update').val(data.username);
@@ -460,6 +466,11 @@ $(document).ready(function () {
           $('#inputEmail-update').val(data.email);
           $(".selectpicker").val(data.id_role);
           $(".selectpickerState").val(data.estado);
+
+          if(data.consent != ""){
+            $('#show-document').show();
+            $('#btn-show-document').attr('href','../../admin/download.php?file=' + data.consent.split('/')[2] + "&process=consent");
+          }
           $('#update').show();
           $('#updateModal').modal('show');
         });
