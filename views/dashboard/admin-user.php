@@ -8,11 +8,7 @@
    header('Location: ../login');
  }
  $user = $_SESSION['user'];
- $username = $user['username'];
- $nit = $user['nit'];
- $lastname = $user['lastname'];
- $phonenumber = $user['phonenumber'];
- $email = $user['email'];
+
  $role = $user['role'];
 
 
@@ -89,22 +85,13 @@ include('../../includes/navbar.php');
               value="<?php echo $phonenumber; ?>" name="phonenumber">
             <span id="phonenumber-error"class="help-block text-danger"><?php echo $phonenumber_err; ?></span>
           </div>
-          <div class="form-label-group <?php echo (!empty($password_err)) ? 'has-error' : ''; ?>">
-            <label>Contraseña</label>
-            <input type="password" name="password" class="form-control" value="<?php echo $password; ?>">
-            <span id="password-error" class="help-block text-danger"><?php echo $password_err; ?></span>
-          </div>
-          <div class="form-label-group <?php echo (!empty($confirm_password_err)) ? 'has-error' : ''; ?>">
-            <label>Confirma la contraseña</label>
-            <input type="password" name="confirm_password" class="form-control"
-              value="<?php echo $confirm_password; ?>">
-            <span id="confirm-password-error" class="help-block text-danger"><?php echo $confirm_password_err; ?></span>
-          </div>
+
           <div class="form-label-group">
             <label>Selecciona el rol</label>
             <br>
             <select class="selectpicker">
                 <option value="2">Usuario</option>
+                <option value="3">Recaudo</option>
                 <option value="1">Administrador</option>
             </select>
           </div>

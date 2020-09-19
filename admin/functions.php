@@ -274,37 +274,40 @@ function registerUser(){
     }
 
     // Validate password
-    if(empty(limpiarDatos($_POST["password"]))){
-		$password_err = "Por favor ingresa la contraseña.";  
-		array_push($response->message,array('id' => "password-error", 'message' => $password_err ));
+	if(!isset($_POST['origin'])){	
+		if(empty(limpiarDatos($_POST["password"]))){
+			$password_err = "Por favor ingresa la contraseña.";  
+			array_push($response->message,array('id' => "password-error", 'message' => $password_err ));
 
-    } else if(strlen(limpiarDatos($_POST["password"])) < 6){
-		$password_err = "La contraseña debe tener minimo 6 caracteres.";
-		array_push($response->message,array('id' => "password-error", 'message' => $password_err ));
-    } else{
-        $password = limpiarDatos($_POST["password"]);
-    }
-    
-    // Validate confirm password
-    if(empty(limpiarDatos($_POST["confirm_password"]))){
-		$confirm_password_err = "Por favor confirme la contraseña"; 
-		array_push($response->message,array('id' => "confirm-password-error", 'message' => $confirm_password_err ));
-    } else{
-        $confirm_password = limpiarDatos($_POST["confirm_password"]);
-        if(empty($password_err) && ($password != $confirm_password)){
-			$confirm_password_err = "Las contraseñas no coinciden.";
+		} else if(strlen(limpiarDatos($_POST["password"])) < 6){
+			$password_err = "La contraseña debe tener minimo 6 caracteres.";
+			array_push($response->message,array('id' => "password-error", 'message' => $password_err ));
+		} else{
+			$password = limpiarDatos($_POST["password"]);
+		}
+		
+		// Validate confirm password
+		if(empty(limpiarDatos($_POST["confirm_password"]))){
+			$confirm_password_err = "Por favor confirme la contraseña"; 
 			array_push($response->message,array('id' => "confirm-password-error", 'message' => $confirm_password_err ));
-        }
-    }
-    
+		} else{
+			$confirm_password = limpiarDatos($_POST["confirm_password"]);
+			if(empty($password_err) && ($password != $confirm_password)){
+				$confirm_password_err = "Las contraseñas no coinciden.";
+				array_push($response->message,array('id' => "confirm-password-error", 'message' => $confirm_password_err ));
+			}
+		}
+	}
 	// Check input errors before inserting in database
 
 	if(empty($nit_err) && empty($password_err) && empty($confirm_password_err)
 	&& empty($email_err) && empty($phonenumber_err) && empty($lastname_err)){
         
-        // Prepare an insert statement
-        $sql = "INSERT INTO users (nit, password, username, lastname, email, phonenumber, role) VALUES (:nit, :password, :username, :lastname, :email, :phonenumber, :role);";
-         
+		// Prepare an insert statement
+		if(!isset($_POST['origin']))	
+        	$sql = "INSERT INTO users (nit, username, lastname, email, phonenumber, role) VALUES (:nit, :password, :username, :lastname, :email, :phonenumber, :role);";
+		else 
+		$sql = "INSERT INTO users (nit, username, lastname, email, phonenumber, role) VALUES (:nit, :username, :lastname, :email, :phonenumber, :role);";
         if($stmt = $pdo->prepare($sql)){
 			// Bind variables to the prepared statement as parameters
 			$param_username = $_POST["username"];
@@ -315,23 +318,27 @@ function registerUser(){
 			//TODO-> CAMBIAR PARA QUE CARGU EL ROLE DESDE EL FORMULARIO
 			$param_role = $role;
 
-            $stmt->bindParam(":nit", $param_nit, PDO::PARAM_STR);
-            $stmt->bindParam(":password", $param_password, PDO::PARAM_STR);
+			$stmt->bindParam(":nit", $param_nit, PDO::PARAM_STR);
 			$stmt->bindParam(":username", $param_username, PDO::PARAM_STR);
             $stmt->bindParam(":lastname", $param_lastname, PDO::PARAM_STR);
             $stmt->bindParam(":email", $param_email, PDO::PARAM_STR);
             $stmt->bindParam(":phonenumber", $param_phonenumber, PDO::PARAM_STR);
             $stmt->bindParam(":role", $param_role, PDO::PARAM_STR);
-
-            // Set parameters
-            $param_password = password_hash($password, PASSWORD_DEFAULT); // Creates a password hash
-            
+			
+			if(!isset($_POST['origin'])){	
+				$stmt->bindParam(":password", $param_password, PDO::PARAM_STR);
+				$param_password = password_hash($password, PASSWORD_DEFAULT); // Creates a password hash
+			}
 			// Attempt to execute the prepared statement
             if($stmt->execute()){
 				
 				// Prepare a select statement
-				$sql = "SELECT id FROM users WHERE nit = :nit";
-        
+				$sql = "SELECT u.id, u.nit, u.username, u.lastname, u.phonenumber, u.email, u.password, r.name as role, r.id as id_role, u.consent
+                FROM users u, roles r
+                WHERE u.role = r.id and nit = :nit";
+		
+				$id_role;
+				$consent;
 				if($stmtSelect = $pdo->prepare($sql)){
 					// Bind variables to the prepared statement as parameters
 					$stmtSelect->bindParam(":nit", $param_nit, PDO::PARAM_STR);
@@ -343,6 +350,8 @@ function registerUser(){
 					if($stmtSelect->execute()){
 						$stmtSelect  = $stmtSelect ->fetch();
 						$id = $stmtSelect['id'];
+						$id_role = $stmtSelect['id_role'];
+						$consent= $stmtSelect['consent'];  
 					} else{
 						echo "Ocurrió un error inesperado. Por favor intentalo de nuevo.";
 					}
@@ -355,6 +364,9 @@ function registerUser(){
 								"email" => $param_email,
 								"phonenumber" => $param_phonenumber,
 								"role" => $param_role,
+								"id_role" => $id_role,
+								"consent" => $consent,
+								"estado" => 'Inactivo',
 							);
 
 				array_push($response->message,array('id' => "response-message", 'message' => "El usuario se registró correctamente!", "data" => $data  ));

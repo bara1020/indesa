@@ -33,8 +33,10 @@ $(document).ready(function () {
   $('#register').click(function (e) {
     e.preventDefault();
     var data = $('#register-form').serializeArray();
+    data.push({ name: 'origin', value: 'principal'});
     data.push({ name: 'role', value: $('.selectpicker').val() });
     data.push({ name: 'tag', value: 'register' });
+    console.log(data);
     $.ajax({
       url: '../../admin/functions.php',
       type: "post",
@@ -44,6 +46,7 @@ $(document).ready(function () {
       }
     })
       .done(function (res) {// true
+        console.log(res);
         $('.help-block').hide();
         let json = JSON.parse(res);
 
@@ -466,8 +469,8 @@ $(document).ready(function () {
           $('#inputEmail-update').val(data.email);
           $(".selectpicker").val(data.id_role);
           $(".selectpickerState").val(data.estado);
-
-          if(data.consent != ""){
+          console.log(data);
+          if(data.consent != "" && data.consent != null){
             $('#show-document').show();
             $('#btn-show-document').attr('href','../../admin/download.php?file=' + data.consent.split('/')[2] + "&process=consent");
           }

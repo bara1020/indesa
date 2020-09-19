@@ -10,7 +10,7 @@ if(isset($_SESSION['loggedin'])){
     if($user['role'] == 'Usuario'){
       header('Location: user/dashboard-user');
     } else {
-      header('Location: dashboard/dashboard');
+      header('Location: dashboard/admin-user');
     }
   }
 }
