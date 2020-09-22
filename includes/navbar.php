@@ -9,19 +9,44 @@
       <!-- Divider -->
       <hr class="sidebar-divider my-0">
 
-      <!-- Nav Item - Users -->
+     
+
+
+     <?php
+     
+     if($_SESSION["role"] == 'Administrador' || $_SESSION["role"] == 'Recaudo'){
+      echo '<!-- Nav Item - Users -->
       <li class="nav-item">
         <a class="nav-link" href="../dashboard/admin-user.php">
           <i class="fas fa-fw fa-users"></i>
           <span>Usuarios</span></a>
-      </li>
+      </li>';
+     }
 
-      <!-- Nav Item - Users -->
+        if($_SESSION["role"] == 'Administrador'){
+            echo ' <!-- Nav Item - Users -->
       <li class="nav-item">
         <a class="nav-link" href="../dashboard/admin-config.php">
           <i class="fas fa-fw fa-table"></i>
           <span>Configuraciones</span></a>
       </li>
+
+      <!-- Nav Item - Tiqueteras -->
+      <li class="nav-item">
+        <a class="nav-link" href="../dashboard/admin-tiqueteras.php">
+          <i class="fas fa-fw fa-table"></i>
+          <span>Tiqueteras</span></a>
+      </li>';
+            
+        }
+     ?>
+     
+      <li class="nav-item">
+        <a class="nav-link" href="../dashboard/admin-booking.php">
+          <i class="fas fa-fw fa-table"></i>
+          <span>Reservas</span></a>
+      </li>
+     
 
       <!-- Divider -->
       <hr class="sidebar-divider d-none d-md-block">
@@ -64,19 +89,40 @@
         </a>
         <!-- Dropdown - User Information -->
         <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
-          <a class="dropdown-item" href="../dashboard/admin-user.php">
+            
+            
+            
+         
+          <?php
+          
+          if($_SESSION["role"] == 'Administrador' || $_SESSION["role"] == 'Recaudo'){
+           echo ' <a class="dropdown-item" href="../dashboard/admin-user.php">
             <i class="fas fa-users fa-sm fa-fw mr-2 text-gray-400"></i>
             Usuarios
-          </a>
-          <a class="dropdown-item" href="../dashboard/admin-config.php">
-            <i class="fas fa-table fa-sm fa-fw mr-2 text-gray-400"></i>
-            Configuraciones
-          </a>
-          <div class="dropdown-divider"></div>
-          <a class="dropdown-item" href="../../admin/logout.php" >
-            <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-            Salir
-          </a>
+          </a>';   
+          }
+          
+            if($_SESSION["role"] == 'Administrador'){
+             echo '<a class="dropdown-item" href="../dashboard/admin-config.php">
+                <i class="fas fa-table fa-sm fa-fw mr-2 text-gray-400"></i>
+                Configuraciones
+              </a>
+              <a class="dropdown-item" href="../dashboard/admin-tiqueteras.php">
+                <i class="fas fa-table fa-sm fa-fw mr-2 text-gray-400"></i>
+                Tiqueteras
+              </a>
+              ';
+                }   
+              ?>
+              <a class="dropdown-item" href="../dashboard/admin-booking.php">
+                <i class="fas fa-table fa-sm fa-fw mr-2 text-gray-400"></i>
+                Reservas
+              </a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="../../admin/logout.php" >
+                <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                Salir
+              </a>
         </div>
       </li>
 

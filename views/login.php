@@ -9,7 +9,9 @@ if(isset($_SESSION['loggedin'])){
     $user = $_SESSION['user'];
     if($user['role'] == 'Usuario'){
       header('Location: user/dashboard-user');
-    } else {
+    } else if($user['role'] == 'Entrenador'){
+       header('Location: dashboard/admin-booking'); 
+    } else {    
       header('Location: dashboard/admin-user');
     }
   }
@@ -22,7 +24,9 @@ if(isset($_SESSION['loggedin'])){
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-
+<link rel="icon" 
+      type="image/png" 
+      href="../img/icon.png">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
 
@@ -42,6 +46,7 @@ if(isset($_SESSION['loggedin'])){
           </div>
           <div class="card-body">
             <h5 class="card-title text-center">Inicio de sesión</h5>
+            
             <form class="form-signin" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
               <div class="form-label-group <?php echo (!empty($nit_err)) ? 'has-error' : ''; ?>">
                 <input type="text" id="inputEmail" 

@@ -2,7 +2,8 @@
 	require 'config.php';
 	session_start();
 	$security = 0;
-	if(isset($_SESSION["role"]) && ($_SESSION["role"] == "Administrador" || $_SESSION["role"] == "Usuario")){
+	if(isset($_SESSION["role"]) && ($_SESSION["role"] == "Administrador" || $_SESSION["role"] == "Usuario" || $_SESSION["role"] == "Recaudo" 
+	|| $_SESSION["role"] == "Entrenador")){
 		$security = 1;
 	} else {
 		$response = new Response();
@@ -24,8 +25,14 @@
 	$email = "";
 	$phonenumber = "";
 	$id ="";
+	$idTiquetera ="";
 	$role = "";
 	$file = "";
+	$descriptionTiqueteras = "";
+	$daysTiqueteras = "";
+
+	$descriptionTiqueterasUpdate = "";
+	$daysTiqueterasUpdate = "";
 
 	$nit_err = "";
 	$password_err = "";
@@ -36,6 +43,10 @@
 	$phonenumber_err = "";
 	$role_err = "";
 	$file_err = "";
+	$descriptionTiqueteras_err = "";
+	$daysTiqueteras_err = "";
+	$descriptionTiqueterasUpdate_err = "";
+	$daysTiqueterasUpdate_err = "";
 
 	// Define variables and initialize with empty values
 	$mondayPicoCedula = "";
@@ -161,6 +172,26 @@
 				getDateScheduler();
 				break;
 			}
+			case 'getTiqueteras':{
+				getTiqueteras();
+				break;
+			}
+			case 'registerTiquetera':{
+				registerTiquetera();
+				break;
+			}
+			case 'updateTiquetera':{
+				updateTiquetera();
+				break;
+			}
+			case 'deleteTiquetera':{
+				deleteTiquetera();
+				break;
+			}
+			case 'getBooking':{
+				getBooking();
+				break;
+			}
 			default:
 				break;
 		}
@@ -179,11 +210,13 @@ function limpiarDatos($datos){
 
 	// Convertimos caracteres especiales en entidades HTML (&, "", '', <, >)
 	$datos = htmlspecialchars($datos);
+
+	$datos = strip_tags($datos);
 	return $datos;
 }
 
 
-#Función para cargar las categorias disponibles
+#Función para registarar usuarios
 function registerUser(){
 	$pdo = getConnection();
 	$response = new Response();
@@ -305,16 +338,22 @@ function registerUser(){
         
 		// Prepare an insert statement
 		if(!isset($_POST['origin']))	
-        	$sql = "INSERT INTO users (nit, username, lastname, email, phonenumber, role) VALUES (:nit, :password, :username, :lastname, :email, :phonenumber, :role);";
+        	$sql = "INSERT INTO users (nit, username, lastname, email, phonenumber, role, token) VALUES (:nit, :password, :username, :lastname, :email, :phonenumber, :role, :token);";
 		else 
-		$sql = "INSERT INTO users (nit, username, lastname, email, phonenumber, role) VALUES (:nit, :username, :lastname, :email, :phonenumber, :role);";
-        if($stmt = $pdo->prepare($sql)){
+			$sql = "INSERT INTO users (nit, username, lastname, email, phonenumber, role, token, id_tiquetera) VALUES (:nit, :username, :lastname, :email, :phonenumber, :role, :token, :id_tiquetera);";
+			$token = openssl_random_pseudo_bytes(24);
+
+			//Convert the binary data into hexadecimal representation.
+			$token = bin2hex($token);
+		
+			if($stmt = $pdo->prepare($sql)){
 			// Bind variables to the prepared statement as parameters
 			$param_username = $_POST["username"];
 			$param_lastname = $_POST["lastname"];
 			$param_email = $_POST["email"];
 			$param_phonenumber = $_POST["phonenumber"];
 			$param_nit = $nit;
+			$id_tiquetera = $_POST["id_tiquetera"];
 			//TODO-> CAMBIAR PARA QUE CARGU EL ROLE DESDE EL FORMULARIO
 			$param_role = $role;
 
@@ -324,6 +363,9 @@ function registerUser(){
             $stmt->bindParam(":email", $param_email, PDO::PARAM_STR);
             $stmt->bindParam(":phonenumber", $param_phonenumber, PDO::PARAM_STR);
             $stmt->bindParam(":role", $param_role, PDO::PARAM_STR);
+			$stmt->bindParam(":token", $token, PDO::PARAM_STR);
+			$stmt->bindParam(":id_tiquetera", $id_tiquetera, PDO::PARAM_STR);
+			
 			
 			if(!isset($_POST['origin'])){	
 				$stmt->bindParam(":password", $param_password, PDO::PARAM_STR);
@@ -333,7 +375,7 @@ function registerUser(){
             if($stmt->execute()){
 				
 				// Prepare a select statement
-				$sql = "SELECT u.id, u.nit, u.username, u.lastname, u.phonenumber, u.email, u.password, r.name as role, r.id as id_role, u.consent
+				$sql = "SELECT u.id, u.nit, u.username, u.lastname, u.phonenumber, u.email, u.password, r.name as role, r.id as id_role, u.consent, u.id_tiquetera
                 FROM users u, roles r
                 WHERE u.role = r.id and nit = :nit";
 		
@@ -366,9 +408,12 @@ function registerUser(){
 								"role" => $param_role,
 								"id_role" => $id_role,
 								"consent" => $consent,
+								"id_tiquetera" => $id_tiquetera,
 								"estado" => 'Inactivo',
 							);
-
+							
+				insertPurchase($id, $id_tiquetera);
+				sendEmail($param_username,$param_email,'Por favor haz la asignación de tu contraseña', $token);
 				array_push($response->message,array('id' => "response-message", 'message' => "El usuario se registró correctamente!", "data" => $data  ));
 				echo json_encode($response);
             } else{
@@ -376,6 +421,125 @@ function registerUser(){
             }
             // Close statement
             unset($stmt);
+             unset($stmtSelect);
+        }
+    } else {
+		echo json_encode($response);
+    }
+    // Close connection
+	unset($pdo);
+	}
+}
+
+function insertPurchase($id, $id_tiquetera){
+	$pdo = getConnection();
+	// Prepare a select statement
+	$sql = "SELECT days FROM tiqueteras WHERE id = :id_tiquetera";
+try{
+	if($stmtSelect = $pdo->prepare($sql)){
+		// Bind variables to the prepared statement as parameters
+		$stmtSelect->bindParam(":id_tiquetera", $id_tiquetera, PDO::PARAM_STR);
+		// Attempt to execute the prepared statement
+		if($stmtSelect->execute()){
+			$stmtSelect  = $stmtSelect ->fetch();
+			$sql = "INSERT INTO purchases (`ID_USER`, `AVIABLE_DAYS`, `AVIABLE`) VALUES (:idUser, :aviableDays, :aviable);";
+
+			if($stmt = $pdo->prepare($sql)){
+				// Bind variables to the prepared statement as parameters
+				$param_aviable = 0;
+		
+				$stmt->bindParam(":idUser", $id, PDO::PARAM_STR);
+				$stmt->bindParam(":aviableDays", $stmtSelect['days'], PDO::PARAM_STR);
+				$stmt->bindParam(":aviable", $param_aviable, PDO::PARAM_STR);
+				
+				// Attempt to execute the prepared statement
+				if($stmt->execute()){
+					return true;
+				} else {
+					return false;
+				}
+			}
+			unset($stmt);
+		} else {
+		    echo $stmtSelect;
+		}
+			unset($stmtSelect);
+	}
+} catch (Exception $e) {
+    echo $e;
+}
+	 unset($pdo);
+}
+
+#Función para regitsar tiqueteras
+function registerTiquetera(){
+	$pdo = getConnection();
+	$response = new Response();
+	$response->status = false;
+	
+	// Processing form data when form is submitted
+	if($_SERVER["REQUEST_METHOD"] == "POST"){
+
+	
+	if(empty(limpiarDatos($_POST["descriptionTiqueteras"]))){
+		$descriptionTiqueteras_err = "Por favor ingrese la descrión de la tiquetera.";    
+		array_push($response->message,array('id' => "descriptionTiqueteras-error", 'message' => $descriptionTiqueteras_err ));
+    } else {
+        $descriptionTiqueteras = limpiarDatos($_POST["descriptionTiqueteras"]);
+	}
+	
+	if(empty(limpiarDatos($_POST["daysTiqueteras"]))){
+		$daysTiqueteras_err = "Por favor ingrese el apellido.";    
+		array_push($response->message,array('id' => "daysTiqueteras-error", 'message' => $daysTiqueteras_err ));
+    } else {
+        $daysTiqueteras = limpiarDatos($_POST["daysTiqueteras"]);
+	}
+
+	if(empty($descriptionTiqueteras_err) && empty($daysTiqueteras_err)){
+        
+		// Prepare an insert statement
+			$sql = "INSERT INTO tiqueteras (DESCRIPTION_TIQUETERA, DAYS) VALUES (:descriptionTiqueteras, :daysTiqueteras);";
+		
+			if($stmt = $pdo->prepare($sql)){
+			// Bind variables to the prepared statement as parameters
+			$param_descriptionTiqueteras = $_POST["descriptionTiqueteras"];
+			$param_daysTiqueteras = $_POST["daysTiqueteras"];
+
+            $stmt->bindParam(":descriptionTiqueteras", $param_descriptionTiqueteras, PDO::PARAM_STR);
+            $stmt->bindParam(":daysTiqueteras", $param_daysTiqueteras, PDO::PARAM_STR);
+			
+			// Attempt to execute the prepared statement
+            if($stmt->execute()){
+				
+				// Prepare a select statement
+				$sql = "SELECT id FROM tiqueteras where DESCRIPTION_TIQUETERA = :descriptionTiqueteras";
+		
+				if($stmtSelect = $pdo->prepare($sql)){
+					// Bind variables to the prepared statement as parameters
+					$stmtSelect->bindParam(":descriptionTiqueteras", $param_descriptionTiqueteras, PDO::PARAM_STR);
+		
+					// Attempt to execute the prepared statement
+					if($stmtSelect->execute()){
+						$stmtSelect  = $stmtSelect ->fetch();
+						$idTiquetera = $stmtSelect['id'];
+					} else{
+						echo "Ocurrió un error inesperado. Por favor intentalo de nuevo.";
+					}
+				}
+				$response->status = true;
+				$data = array(  "id" => $idTiquetera,
+					            "description" => $param_descriptionTiqueteras,
+								"days" => $param_daysTiqueteras,
+							);
+				
+				array_push($response->message,array('id' => "response-message", 'message' => "El usuario se registró correctamente!", "data" => $data  ));
+				echo json_encode($response);
+            } else{
+                echo "Ocurrió un error inesperado. Por favor intentalo de nuevo.";
+            }
+            // Close statement
+            unset($stmt);
+             unset($stmtSelect);
         }
     } else {
 		echo json_encode($response);
@@ -602,23 +766,142 @@ function deleteUser(){
 			} else {
 				echo "Lo sentimos, al parecer se presento un problema eliminar el usuario, intente nuevamente o contacte al administrador";
 			}
+		unset($stmt);
 	} catch (Exception $e) {
 		echo $e->getMessage();
 	  }
+	 unset($pdo);
 }
 
 ##Captura todos los usuarios que se encuentran registrados en la plataforma
 function getUsers(){
 	$pdo = getConnection();
-	$stmt = $pdo->prepare("SELECT u.id, u.username, u.nit, u.lastname, u.email, u.phonenumber, r.id as id_role , r.name as role, u.estado, u.consent from users u, roles r where u.role = r.id order by created_at desc"); 
+	$stmt = $pdo->prepare("SELECT u.id, u.username, u.nit, u.lastname, u.email, u.phonenumber, r.id as id_role , r.name as role, u.estado, u.consent, id_tiquetera from users u, roles r where u.role = r.id order by created_at desc"); 
 	$stmt->execute();
 
 	// set the resulting array to associative
 	$result = $stmt->fetchAll(PDO::FETCH_ASSOC); 
 	echo json_encode($result);
+	 unset($stmt);
+	 unset($pdo);
 }
 
+##Captura todos los usuarios que se encuentran registrados en la plataforma
+function getBooking(){
+	$pdo = getConnection();
+	$date = date('Y-m-d');
+	$stmt = $pdo->prepare("SELECT b.id, b.day, b.schedulerFrom, b.schedulerTo, b.userId, b.date, b.currentdate, u.username, u.lastname, u.nit FROM booking b , users u WHERE b.userId = u.id and b.date = :date");
+	
+	$stmt->bindParam(":date", $date, PDO::PARAM_STR);
+	$stmt->execute();
 
+	// set the resulting array to associative
+	$result = $stmt->fetchAll(PDO::FETCH_ASSOC); 
+	echo json_encode($result);
+	 unset($stmt);
+	 unset($pdo);
+}
+
+##Captura todas las tiquereteas registradas en la plataforma
+function getTiqueteras(){
+	$pdo = getConnection();
+	$stmt = $pdo->prepare("SELECT id, DESCRIPTION_TIQUETERA as description, days FROM tiqueteras"); 
+	$stmt->execute();
+
+	// set the resulting array to associative
+	$result = $stmt->fetchAll(PDO::FETCH_ASSOC); 
+	 unset($stmt);
+	  unset($pdo);
+	echo json_encode($result);
+}
+
+#Función para actualizar el usuario
+function updateTiquetera(){
+	
+	$pdo = getConnection();
+	$response = new Response();
+	$response->status = false;
+	
+	// Processing form data when form is submitted
+	if($_SERVER["REQUEST_METHOD"] == "POST"){
+
+	
+	if(empty(limpiarDatos($_POST["descriptionTiqueteras"]))){
+		$descriptionTiqueteras_err = "Por favor ingrese la descripción de la tiquetera.";    
+		array_push($response->message,array('id' => "descriptionTiqueteras-error", 'message' => $descriptionTiqueteras_err ));
+    } else {
+        $descriptionTiqueteras = limpiarDatos($_POST["descriptionTiqueteras"]);
+	}
+	
+	if(empty(limpiarDatos($_POST["daysTiqueteras"]))){
+		$daysTiqueteras_err = "Por favor ingrese los días de la tiquera.";    
+		array_push($response->message,array('id' => "daysTiqueteras-error", 'message' => $daysTiqueteras_err ));
+    } else {
+        $daysTiqueteras = limpiarDatos($_POST["daysTiqueteras"]);
+	}
+	
+	
+    // Check input errors before inserting in database
+    if(empty($descriptionTiqueteras_err) && empty($daysTiqueteras_err)){
+        
+		// Prepare an insert statement
+		$sql = "UPDATE tiqueteras set  DESCRIPTION_TIQUETERA = :descriptionTiqueteras, days = :days where id = :id";
+         
+        if($stmt = $pdo->prepare($sql)){
+			// Bind variables to the prepared statement as parameters
+			$param_description = $_POST["descriptionTiqueteras"];
+			$param_days = $_POST["daysTiqueteras"];
+			
+			
+			$param_id = $_POST["id"];
+			$stmt->bindParam(":id", $param_id, PDO::PARAM_STR);
+			$stmt->bindParam(":descriptionTiqueteras", $param_description, PDO::PARAM_STR);
+            $stmt->bindParam(":days", $param_days, PDO::PARAM_STR);
+			
+			
+            // Attempt to execute the prepared statement
+            if($stmt->execute()){
+				// Redirect to login page
+				$response->status = true;
+				$data = array(	"id" => $param_id,
+								"description" => $param_description,
+								"days" => $param_days,
+							);
+				array_push($response->message,array('id' => "response-message", 'message' => "El usuario se actualizó correctamente!", "data" => $data ));
+				echo json_encode($response);
+            } else{
+                echo "Ocurrió un error inesperado. Por favor intentalo de nuevo.";
+            }
+
+            // Close statement
+            unset($stmt);
+        }
+    } else {
+		echo json_encode($response);
+    }
+    // Close connection
+	unset($pdo);
+}
+}
+
+#Función para elminar la tiquetera
+function deleteTiquetera(){
+	$pdo = getConnection();
+	try {
+			$sql = "DELETE FROM `tiqueteras` WHERE id = :id";
+			$stmt = $pdo->prepare($sql);
+			$stmt->bindParam(":id", $_POST['id'], PDO::PARAM_STR);
+			if($stmt->execute()){
+				echo "La tiquerera fue eliminada satisfactoriamente.";
+			} else {
+				echo "Lo sentimos, al parecer se presento un problema eliminar la tiquetera, intente nuevamente o contacte al administrador";
+			}
+		 unset($stmt);
+	} catch (Exception $e) {
+		echo $e->getMessage();
+	  }
+	  unset($pdo);
+}
 
 ##Captura configuración de días pico y cédula
 function getPicoCedula(){
@@ -628,7 +911,8 @@ function getPicoCedula(){
 
 	// set the resulting array to associative
 	$result = $stmt->fetchAll(PDO::FETCH_ASSOC); 
-
+     unset($stmt);
+    unset($pdo);
 	echo json_encode($result);
 }
 
@@ -644,7 +928,8 @@ function getDateScheduler(){
 			$result = $stmt->fetchAll(PDO::FETCH_ASSOC); 
 
 		}
-	
+	 unset($stmt);
+	  unset($pdo);
 	echo json_encode($result);
 }
 
@@ -656,7 +941,8 @@ function getConfiguration(){
 
 	// set the resulting array to associative
 	$result = $stmt->fetch(PDO::FETCH_ASSOC); 
-
+ unset($stmt);
+  unset($pdo);
 	echo json_encode($result);
 }
 
@@ -879,6 +1165,7 @@ function excecuteUpdateScheduler($schedulerTo,$schedulerFrom,$schedulerToAfter,$
             // Close statement
             unset($stmt);
         }
+    unset($pdo);
 }
 
 ## Acutualiza los horarios
@@ -900,6 +1187,7 @@ function excecuteUpdateUserLimit($userLimit){
             // Close statement
             unset($stmt);
         }
+ unset($pdo);
 }
 
 function excecuteUpdatePicoCedula($restriction,$day){
@@ -921,6 +1209,7 @@ function excecuteUpdatePicoCedula($restriction,$day){
             // Close statement
             unset($stmt);
         }
+     unset($pdo);
 }
 
 function getFile(){
@@ -1000,6 +1289,188 @@ function validateEmail($email){
     else
        return 0;
 }
+
+function sendEmail($name, $email, $message, $token){
+
+
+	// Check for empty fields
+	if(empty($name)      ||
+	empty($email)     ||
+	!filter_var($email,FILTER_VALIDATE_EMAIL))
+	{
+	echo "No arguments Provided!";
+	return false;
+	}
+    
+	$name = limpiarDatos($name);
+	$email = limpiarDatos($email);
+	$message = limpiarDatos($message);
+
+	$myfile = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+	<html xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office" style="width:100%;font-family:arial, helvetica, sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;padding:0;Margin:0">
+	 <head> 
+	  <meta charset="UTF-8"> 
+	  <meta content="width=device-width, initial-scale=1" name="viewport"> 
+	  <meta name="x-apple-disable-message-reformatting"> 
+	  <meta http-equiv="X-UA-Compatible" content="IE=edge"> 
+	  <meta content="telephone=no" name="format-detection"> 
+	  <title>Nuevo correo electrónico</title> 
+	  <!--[if (mso 16)]>
+		<style type="text/css">
+		a {text-decoration: none;}
+		</style>
+		<![endif]--> 
+	  <!--[if gte mso 9]><style>sup { font-size: 100% !important; }</style><![endif]--> 
+	  <!--[if gte mso 9]>
+	<xml>
+		<o:OfficeDocumentSettings>
+		<o:AllowPNG></o:AllowPNG>
+		<o:PixelsPerInch>96</o:PixelsPerInch>
+		</o:OfficeDocumentSettings>
+	</xml>
+	<![endif]--> 
+	  <style type="text/css">
+	#outlook a {
+		padding:0;
+	}
+	.ExternalClass {
+		width:100%;
+	}
+	.ExternalClass,
+	.ExternalClass p,
+	.ExternalClass span,
+	.ExternalClass font,
+	.ExternalClass td,
+	.ExternalClass div {
+		line-height:100%;
+	}
+	.es-button {
+		mso-style-priority:100!important;
+		text-decoration:none!important;
+	}
+	a[x-apple-data-detectors] {
+		color:inherit!important;
+		text-decoration:none!important;
+		font-size:inherit!important;
+		font-family:inherit!important;
+		font-weight:inherit!important;
+		line-height:inherit!important;
+	}
+	.es-desk-hidden {
+		display:none;
+		float:left;
+		overflow:hidden;
+		width:0;
+		max-height:0;
+		line-height:0;
+		mso-hide:all;
+	}
+	@media only screen and (max-width:600px) {p, ul li, ol li, a { font-size:16px!important; line-height:150%!important } h1 { font-size:30px!important; text-align:center; line-height:120% } h2 { font-size:26px!important; text-align:center; line-height:120% } h3 { font-size:20px!important; text-align:center; line-height:120% } h1 a { font-size:30px!important } h2 a { font-size:26px!important } h3 a { font-size:20px!important } .es-menu td a { font-size:16px!important } .es-header-body p, .es-header-body ul li, .es-header-body ol li, .es-header-body a { font-size:16px!important } .es-footer-body p, .es-footer-body ul li, .es-footer-body ol li, .es-footer-body a { font-size:16px!important } .es-infoblock p, .es-infoblock ul li, .es-infoblock ol li, .es-infoblock a { font-size:12px!important } *[class="gmail-fix"] { display:none!important } .es-m-txt-c, .es-m-txt-c h1, .es-m-txt-c h2, .es-m-txt-c h3 { text-align:center!important } .es-m-txt-r, .es-m-txt-r h1, .es-m-txt-r h2, .es-m-txt-r h3 { text-align:right!important } .es-m-txt-l, .es-m-txt-l h1, .es-m-txt-l h2, .es-m-txt-l h3 { text-align:left!important } .es-m-txt-r img, .es-m-txt-c img, .es-m-txt-l img { display:inline!important } .es-button-border { display:block!important } a.es-button { font-size:20px!important; display:block!important; border-width:10px 0px 10px 0px!important } .es-btn-fw { border-width:10px 0px!important; text-align:center!important } .es-adaptive table, .es-btn-fw, .es-btn-fw-brdr, .es-left, .es-right { width:100%!important } .es-content table, .es-header table, .es-footer table, .es-content, .es-footer, .es-header { width:100%!important; max-width:600px!important } .es-adapt-td { display:block!important; width:100%!important } .adapt-img { width:100%!important; height:auto!important } .es-m-p0 { padding:0px!important } .es-m-p0r { padding-right:0px!important } .es-m-p0l { padding-left:0px!important } .es-m-p0t { padding-top:0px!important } .es-m-p0b { padding-bottom:0!important } .es-m-p20b { padding-bottom:20px!important } .es-mobile-hidden, .es-hidden { display:none!important } tr.es-desk-hidden, td.es-desk-hidden, table.es-desk-hidden { width:auto!important; overflow:visible!important; float:none!important; max-height:inherit!important; line-height:inherit!important } tr.es-desk-hidden { display:table-row!important } table.es-desk-hidden { display:table!important } td.es-desk-menu-hidden { display:table-cell!important } table.es-table-not-adapt, .esd-block-html table { width:auto!important } table.es-social { display:inline-block!important } table.es-social td { display:inline-block!important } }
+	</style> 
+	 </head> 
+	 <body style="width:100%;font-family:arial, "helvetica neue", helvetica, sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;padding:0;Margin:0"> 
+	  <div class="es-wrapper-color" style="background-color:#F6F6F6"> 
+	   <!--[if gte mso 9]>
+				<v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t">
+					<v:fill type="tile" color="#f6f6f6"></v:fill>
+				</v:background>
+			<![endif]--> 
+	   <table class="es-wrapper" width="100%" cellspacing="0" cellpadding="0" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;padding:0;Margin:0;width:100%;height:100%;background-repeat:repeat;background-position:center top"> 
+		 <tr style="border-collapse:collapse"> 
+		  <td valign="top" style="padding:0;Margin:0"> 
+		   <table class="es-content" cellspacing="0" cellpadding="0" align="center" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;table-layout:fixed !important;width:100%"> 
+			 <tr style="border-collapse:collapse"> 
+			  <td align="center" style="padding:0;Margin:0"> 
+			   <table class="es-content-body" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;background-color:#FFFFFF;width:600px" cellspacing="0" cellpadding="0" bgcolor="#ffffff" align="center"> 
+				 <tr style="border-collapse:collapse"> 
+				  <td align="left" style="padding:0;Margin:0;padding-top:20px;padding-left:20px;padding-right:20px"> 
+				   <table width="100%" cellspacing="0" cellpadding="0" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px"> 
+					 <tr style="border-collapse:collapse"> 
+					  <td class="es-m-p0r es-m-p20b" valign="top" align="center" style="padding:0;Margin:0;width:560px"> 
+					   <table width="100%" cellspacing="0" cellpadding="0" role="presentation" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px"> 
+						 <tr style="border-collapse:collapse"> 
+						  <td align="center" style="padding:0;Margin:0;font-size:0px"><img class="adapt-img" src="https://ahfet.stripocdn.email/content/guids/CABINET_b1ebefbd9cd69fe74046e26760648f55/images/96951600572401695.jpg" alt style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic"></td> 
+						 </tr> 
+					   </table></td> 
+					 </tr> 
+				   </table></td> 
+				 </tr> 
+				 <tr style="border-collapse:collapse"> 
+				  <td align="left" style="padding:0;Margin:0;padding-top:20px;padding-left:20px;padding-right:20px"> 
+				   <table cellpadding="0" cellspacing="0" width="100%" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px"> 
+					 <tr style="border-collapse:collapse"> 
+					  <td align="center" valign="top" style="padding:0;Margin:0;width:560px"> 
+					   <table cellpadding="0" cellspacing="0" width="100%" role="presentation" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px"> 
+						 <tr style="border-collapse:collapse"> 
+						  <td align="center" style="padding:0;Margin:0"><p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:14px;font-family:arial, "helvetica neue", helvetica, sans-serif;line-height:21px;color:#333333">Por favor pulsa click sobre el siguiente botón para terminar tu registro.<br></p></td> 
+						 </tr> 
+					   </table></td> 
+					 </tr> 
+				   </table></td> 
+				 </tr> 
+				 <tr style="border-collapse:collapse"> 
+				  <td align="left" style="padding:0;Margin:0;padding-top:20px;padding-left:20px;padding-right:20px"> 
+				   <table cellpadding="0" cellspacing="0" width="100%" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px"> 
+					 <tr style="border-collapse:collapse"> 
+					  <td align="center" valign="top" style="padding:0;Margin:0;width:560px"> 
+					   <table cellpadding="0" cellspacing="0" width="100%" role="presentation" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px"> 
+						 <tr style="border-collapse:collapse"> 
+						  <td align="center" style="padding:0;Margin:0"><span class="es-button-border" style="border-style:solid;border-color:#2CB543;background:#2CB543;border-width:0px 0px 2px 0px;display:inline-block;border-radius:30px;width:auto"><a href="http://registro.indesa.gov.co/views/user/register-password.php?token='. $token . '" class="es-button" target="_blank" style="mso-style-priority:100 !important;text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, "helvetica neue", helvetica, sans-serif;font-size:18px;color:#FFFFFF;border-style:solid;border-color:#31CB4B;border-width:10px 20px 10px 20px;display:inline-block;background:#31CB4B;border-radius:30px;font-weight:normal;font-style:normal;line-height:22px;width:auto;text-align:center; padding:20px">Registrar</a></span></td> 
+						 </tr> 
+					   </table></td> 
+					 </tr> 
+				   </table></td> 
+				 </tr> 
+				 <tr style="border-collapse:collapse"> 
+				  <td align="left" style="padding:0;Margin:0;padding-top:20px;padding-left:20px;padding-right:20px"> 
+				   <!--[if mso]><table style="width:560px" cellpadding="0" cellspacing="0"><tr><td style="width:270px" valign="top"><![endif]--> 
+				   <table cellpadding="0" cellspacing="0" class="es-left" align="left" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;float:left"> 
+					 <tr style="border-collapse:collapse"> 
+					  <td class="es-m-p20b" align="left" style="padding:0;Margin:0;width:270px"> 
+					   <table cellpadding="0" cellspacing="0" width="100%" role="presentation" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px"> 
+						 <tr style="border-collapse:collapse"> 
+						  <td align="left" style="padding:0;Margin:0"><h3 style="Margin:0;line-height:24px;mso-line-height-rule:exactly;font-family:arial, "helvetica neue", helvetica, sans-serif;font-size:20px;font-style:normal;font-weight:normal;color:#333333"><br>HORARIOS Y DIRECCIÓN</h3><p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:12px;font-family:arial, "helvetica neue", helvetica, sans-serif;line-height:18px;color:#333333"><strong>Teléfono(s):&nbsp;</strong>314 685 80 09 – 321 255 80 29.<br><strong>Correo electrónico:&nbsp;</strong><a href="mailto:usuario@indesa.gov.co" style="-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, "helvetica neue", helvetica, sans-serif;font-size:12px;text-decoration:underline;color:#2CB543">usuario@indesa.gov.co</a><br><strong>Dirección física:&nbsp;</strong>Calle 76 E Sur #46 B 82<br><strong>Horario de atención en oficinas:</strong><br>Lunes a jueves de 8:00 a.m. a 12:00 m. y de 2:00 p.m. a 6:00 p.m. Viernes de 8:00 a.m. a 12:00 m. y de 2:00 p.m. a 5:00 p.m.<br><strong>Correo Electrónico para Notificaciones Judiciales:</strong><br><a href="mailto:notificacionesjudiciales@indesa.gov.co" style="-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, "helvetica neue", helvetica, sans-serif;font-size:12px;text-decoration:underline;color:#2CB543">notificacionesjudiciales@indesa.gov.co</a></p></td> 
+						 </tr> 
+					   </table></td> 
+					 </tr> 
+				   </table> 
+				   <!--[if mso]></td><td style="width:20px"></td><td style="width:270px" valign="top"><![endif]--> 
+				   <table cellpadding="0" cellspacing="0" class="es-right" align="right" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;float:right"> 
+					 <tr style="border-collapse:collapse"> 
+					  <td align="left" style="padding:0;Margin:0;width:270px"> 
+					   <table cellpadding="0" cellspacing="0" width="100%" role="presentation" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px"> 
+						 <tr style="border-collapse:collapse"> 
+						  <td align="center" style="padding:0;Margin:0;font-size:0px"><img class="adapt-img" src="https://ahfet.stripocdn.email/content/guids/CABINET_b1ebefbd9cd69fe74046e26760648f55/images/43011600572857904.png" alt style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic" width="270" height="39"></td> 
+						 </tr> 
+						 <tr style="border-collapse:collapse"> 
+						  <td align="center" style="padding:0;Margin:0;font-size:0px"><img class="adapt-img" src="https://ahfet.stripocdn.email/content/guids/CABINET_b1ebefbd9cd69fe74046e26760648f55/images/75521600572914678.png" alt style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic"></td> 
+						 </tr> 
+					   </table></td> 
+					 </tr> 
+				   </table> 
+				   <!--[if mso]></td></tr></table><![endif]--></td> 
+				 </tr> 
+			   </table></td> 
+			 </tr> 
+		   </table></td> 
+		 </tr> 
+	   </table> 
+	  </div>  
+	 </body>
+	</html>';
+
+	// Creatfile_get_contents("email_template.html")e the email and send the message
+	$to = $email; // Add your email address inbetween the '' replacing yourname@yourdomain.com - This is where the form will send a message to.
+	$email_subject = "Asignación de contraseña";
+	$email_body = $myfile;
+	$headers = "From: actividadfisica@indesa.gov.co\n"; // This is the email address the generated message will be from. We recommend using something like noreply@yourdomain.com.
+	$headers .= "Reply-To:" . $email ."\r\n";   
+	$headers .= "Content-Type: text/html; charset=UTF-8\r\n";
+	mail($to,$email_subject,$email_body,$headers);
+	fclose($myfile);
+}
+
+
 
  ?>
 

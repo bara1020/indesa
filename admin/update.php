@@ -28,6 +28,7 @@
 	$id ="";
 	$role = "";
 	$consent_path;
+	$id_tiquetera = "";
 
 	$nit_err = "";
 	$password_err = "";
@@ -121,7 +122,8 @@
 		if($uploadFile != ""){
 			if(isset($_POST["idRole"])){
 				$param_role = $_POST["idRole"];
-				$sql = "UPDATE users set  username = :username, lastname = :lastname, email = :email, phonenumber = :phonenumber, role = :roleId, estado = :estado, consent = :consent where id = :id";
+				$id_tiquetera = $_POST["id_tiquetera"];
+				$sql = "UPDATE users set  username = :username, lastname = :lastname, email = :email, phonenumber = :phonenumber, role = :roleId, estado = :estado, consent = :consent, id_tiquetera = :id_tiquetera where id = :id";
 			} else {
 				$sql = "UPDATE users set  username = :username, lastname = :lastname, email = :email, phonenumber = :phonenumber, estado = 'Activo', consent = :consent where id = :id";
 			}
@@ -129,7 +131,8 @@
 		} else {
 			if(isset($_POST["idRole"])){
 				$param_role = $_POST["idRole"];
-				$sql = "UPDATE users set  username = :username, lastname = :lastname, email = :email, phonenumber = :phonenumber, role = :roleId, estado = :estado where id = :id";
+				$id_tiquetera = $_POST["id_tiquetera"];
+				$sql = "UPDATE users set  username = :username, lastname = :lastname, email = :email, phonenumber = :phonenumber, role = :roleId, estado = :estado, id_tiquetera = :id_tiquetera where id = :id";
 			} else {
 				$sql = "UPDATE users set  username = :username, lastname = :lastname, email = :email, phonenumber = :phonenumber, estado = 'Activo' where id = :id";
 			}
@@ -153,6 +156,8 @@
 			$stmt->bindParam(":estado", $param_estado, PDO::PARAM_STR);
 			if(isset($_POST["idRole"])){
 				$stmt->bindParam(":roleId", intval($param_role), PDO::PARAM_INT);
+				$stmt->bindParam(":id_tiquetera", intval($id_tiquetera), PDO::PARAM_INT);
+				
 			}
 
 			if($uploadFile != "")
@@ -176,6 +181,7 @@
 									"estado" => $_POST['estado'],
 									"consent" => $uploadFile,
 									"id_role" => $param_role,
+									"id_tiquetera" => $id_tiquetera
 								);
 					
 				} else {
@@ -189,6 +195,8 @@
 								);
 				}
 				updateSession();
+				if($_POST['estado'] == 'Activo')
+					insertPurchase($param_id, $id_tiquetera);
 				array_push($response->message,array('id' => "response-message", 'message' => "El usuario se actualizó correctamente!", "data" => $data ));
 				echo json_encode($response);
             } else{
@@ -203,6 +211,71 @@
     }
     // Close connection
 	unset($pdo);
+}
+
+
+function validatePurchases($id){
+    $status = false;
+    $pdo = getConnection();
+	// Prepare a select statement
+	$sql = "SELECT id,aviable_days FROM purchases WHERE id_user = :id_user";
+
+	if($stmtSelect = $pdo->prepare($sql)){
+		// Bind variables to the prepared statement as parameters
+		$stmtSelect->bindParam(":id_user", $id, PDO::PARAM_STR);
+
+		// Attempt to execute the prepared statement
+		if($stmtSelect->execute()){
+			if($stmtSelect->rowCount() >= 1){
+			    $status = true;
+			}
+			
+		}
+		unset($stmtSelect);
+	}
+	unset($pdo);
+	return $status;
+}
+
+function insertPurchase($id, $id_tiquetera){
+	$pdo = getConnection();
+	// Prepare a select statement
+	$sql = "SELECT days FROM tiqueteras WHERE id = :id_tiquetera";
+
+	if($stmtSelect = $pdo->prepare($sql)){
+		// Bind variables to the prepared statement as parameters
+		$stmtSelect->bindParam(":id_tiquetera", $id_tiquetera, PDO::PARAM_STR);
+
+		// Attempt to execute the prepared statement
+		if($stmtSelect->execute()){
+			$stmtSelect  = $stmtSelect ->fetch();
+			
+			if(validatePurchases($id)){
+    			$sql = "UPDATE purchases SET `AVIABLE_DAYS` = :aviableDays, `AVIABLE` = :aviable where `ID_USER` = :idUser and aviable = 0;";
+			} else {
+			    $sql = "INSERT INTO purchases (`AVIABLE_DAYS`,`AVIABLE`, `ID_USER`) VALUES (:aviableDays,:aviable,:idUser);";
+			}
+
+			if($stmt = $pdo->prepare($sql)){
+				// Bind variables to the prepared statement as parameters
+				$param_aviable = 1;
+		
+				$stmt->bindParam(":idUser", $id, PDO::PARAM_STR);
+				$stmt->bindParam(":aviableDays", $stmtSelect['days'], PDO::PARAM_STR);
+				$stmt->bindParam(":aviable", $param_aviable, PDO::PARAM_STR);
+				
+				// Attempt to execute the prepared statement
+				if($stmt->execute()){
+					return true;
+				} else {
+					return false;
+				}
+			}
+			unset($stmt);
+		}
+			unset($stmtSelect);
+	}
+	 unset($pdo);
 }
 
 

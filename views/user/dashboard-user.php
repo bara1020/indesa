@@ -60,7 +60,7 @@
                                   value="<?php echo $phonenumber; ?>" name="phonenumber">
                                 <span id="phonenumber-error" class="help-block text-danger"><?php echo $phonenumber_err; ?></span>
                               </div>
-                              <div class="form-label-group mt-3 <?php echo (!empty($password_err)) ? 'has-error' : ''; ?>">
+                              <!--<div class="form-label-group mt-3 <?php echo (!empty($password_err)) ? 'has-error' : ''; ?>">
                                 <label for="password">password</label>
                                 <input type="password" id="password" class="form-control" autofocus value="<?php echo $password; ?>"
                                   name="password">
@@ -71,7 +71,7 @@
                                 <input type="password" name="confirm_password" class="form-control"
                                   value="<?php echo $confirm_password; ?>">
                                 <span id="confirm-password-error" class="help-block text-danger"><?php echo $confirm_password_err; ?></span>
-                              </div>
+                              </div>-->
                               <hr>
                               <div id="response-message" class="alert alert-success" role="alert">
                                   

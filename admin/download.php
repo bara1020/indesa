@@ -2,11 +2,13 @@
  
  $attachment_location ="";
  if(isset($_GET['process'])){
-      $attachment_location = $_SERVER["DOCUMENT_ROOT"] . "/indesa/uploaded_files/" . $_GET['file'];
+      //$attachment_location = $_SERVER["DOCUMENT_ROOT"] . "/indesa/uploaded_files/" . $_GET['file'];
+      $attachment_location = $_SERVER["DOCUMENT_ROOT"] . "/uploaded_files/" . $_GET['file'];
  } else {
-      $attachment_location = $_SERVER["DOCUMENT_ROOT"] . "/indesa/img/" . $_GET['file'];
+      //$attachment_location = $_SERVER["DOCUMENT_ROOT"] . "/indesa/img/" . $_GET['file'];
+      $attachment_location = $_SERVER["DOCUMENT_ROOT"] . "/img/" . $_GET['file'];
  }
-
+echo $attachment_location;
        if (file_exists($attachment_location)) {
            header($_SERVER["SERVER_PROTOCOL"] . " 200 OK");
            header("Cache-Control: public"); // needed for internet explorer

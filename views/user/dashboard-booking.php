@@ -35,7 +35,9 @@
             <div class="form-label-group mt-3">
               <label for="dateQuoteUpdate">Fecha de reserva</label>
               <h5 id="labelDateQuoteUpdate" class="text-primary"></h5>
-            <?php  
+            <?php 
+              
+              if($user['aviable'] == 1 ){
                 if(isset($_SESSION['success'])){
                   if($_SESSION['success'] != ""){
                     echo '
@@ -58,7 +60,13 @@
                           <p>Pulsa click sobre "Descargar Consentimiento" para descargar el consentimiento de bioseguridad el cual podras descargar y cargarlo diligenciado pulsando click sobre "Cargar Archivo ", o si lo deseas, puedes diligenciarlo directamente en el gimnasio. Rercuerda que es un requisito para poder ingresar al gimnasio</p>
                           <a class="btn btn-info btn-block" href="../../admin/download.php?file=Consentimiento_firmado.pdf">Descargar
                             Consentimiento</a>
-                        </div>
+                      </div>
+                       <div class="form-label-group mt-3 ">
+                          <p>Recuerda diligenciar el formato de registro de asistencia para poder ingresar al gimnasio.</p>
+                          <a class="btn btn-info btn-block" href=" https://docs.google.com/forms/d/e/1FAIpQLSffcwg7e776cRXt2LSUGs1LMbi1TQU1xuEKKDsg3IO56d9peQ/viewform">Diligenciar Formulario</a>
+                      </div>
+                      
+                     
 
                       <div class="form-label-group mt-3">
                           <label for="uploadedFile">Cargar Consentimiento Firmado</label>
@@ -67,7 +75,7 @@
                             placeholder="Selecciona un archivo" />
                           <br>
                           <span id="file_err" class="help-block text-danger "><?php echo $file_err; ?></span>
-                        </div>
+                      </div>
                       <hr>
                       <div class="form-label-group mt-4">
                         <h6 id="scheduler-title" style="display:none">Horarios disponibles</h6>
@@ -89,7 +97,12 @@
                         <button id="updatebooking" class="btn btn-lg btn-primary btn-block text-uppercase" type="submit"
                           value="update">Registrar
                         </button>';
-                }
+                  }
+                } else {
+                  echo '<div class="alert alert-danger" role="alert">
+                    <strong>Tu plan ha caducado, por lo que no puedes acceder a esta función.Te invitamos a acercate al área de recaudo para adquirir un nuevo plan.</strong>
+                  </div>';
+                } 
                ?>
           </form>
         </div>

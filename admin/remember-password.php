@@ -9,30 +9,14 @@ class Response {
 // Define variables and initialize with empty values
 	// Define variables and initialize with empty values
 	$nit = "";
-	$username = "";
-	$lastname = "";
 	$email = "";
-	$phonenumber = "";
 	$id ="";
     $message ="";
-    $day = "";
-    $schedulerFrom = "";
-    $schedulerTo = "";
-    $date = "";
     $success ="";
-    $loader = false;
-    $process = "";
-    $readedProtocol =false;
+    $name ="";
     
 	$nit_err = "";
-	$username_err = "";
-	$lastname_err = "";
 	$email_err = "";
-	$phonenumber_err = "";
-    $file_err = "";
-    $date_err = "";
-    $scheduler_err = "";
-    $readedProtocol_err = "";
  
 // Processing form data when form is submitted
 if($_SERVER["REQUEST_METHOD"] == "POST"){
@@ -40,12 +24,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     $pdo = getConnection();
 	$response = new Response();
     $response->status = false;
-    $process = $_POST['process'];
     
-    // validate file
-    if(empty($_FILES['uploadedFile']['name'])){
-        $file_err = "Debes cargar el archivo firmado";
-    }
 
     // Validate nit
     if(empty(limpiarDatos($_POST["nit"]))){
@@ -53,7 +32,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 		array_push($response->message,array('id' => "nit-error", 'message' => $nit_err ));
     } else{
         // Prepare a select statement
-        $sql = "SELECT id FROM users WHERE nit = :nit";
+        $sql = "SELECT id, email, username FROM users WHERE nit = :nit";
         
         if($stmt = $pdo->prepare($sql)){
             // Bind variables to the prepared statement as parameters
@@ -65,15 +44,14 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             // Attempt to execute the prepared statement
             if($stmt->execute()){
                 if($stmt->rowCount() == 1){
-					$nit_err = "El número de documento ya se encuentra registrado.";
-					array_push($response->message,array('id' => "nit-error", 'message' => $nit_err ));
+                    $row = $stmt->fetch();
+                    $email = $row['email'];
+                    $name = $row['username'];
+                    $id = $row['id'];
                 } else if (validateLenght(limpiarDatos($_POST["nit"]),13) < 1){
 					$nit_err = "El número de documento no es valido";    
 					array_push($response->message,array('id' => "nit-error", 'message' => $nit_err ));
-				} else{
-                    $nit = limpiarDatos($_POST["nit"]);
-                    $username = limpiarDatos($_POST["username"]);
-                }
+				}
             } else{
                 $message = "Ocurrió un error inesperado. Por favor intentalo de nuevo.";
             }
@@ -83,110 +61,26 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         }
 	}
 	
-	if(empty(limpiarDatos($_POST["username"]))){
-		$username_err = "Por favor ingrese el nombre.";    
-		array_push($response->message,array('id' => "username-error", 'message' => $username_err ));
-    } else {
-        $username = limpiarDatos($_POST["username"]);
-	}
-	
-	if(empty(limpiarDatos($_POST["lastname"]))){
-		$lastname_err = "Por favor ingrese el apellido.";    
-		array_push($response->message,array('id' => "lastname-error", 'message' => $lastname_err ));
-    } else {
-        $lastname = limpiarDatos($_POST["lastname"]);
-	}
-	
-	if(empty(limpiarDatos($_POST["email"]))){
-		$email_err = "Por favor ingrese el email.";    
-		array_push($response->message,array('id' => "email-error", 'message' => $email_err ));
-    } else {
-		if(validateEmail(limpiarDatos($_POST["email"]))){
-			$email = limpiarDatos($_POST["email"]);
-		} else {
-			$email_err = "El email no es valido.";    
-			array_push($response->message,array('id' => "email-error", 'message' => $email_err ));
-		}
-	}
-	
-	//validate phonenumber
-	if(empty(limpiarDatos($_POST["phonenumber"]))){
-		$phonenumber_err = "Por favor ingrese el número de teléfono.";    
-		array_push($response->message,array('id' => "phonenumber-error", 'message' => $phonenumber_err ));
-    } else if (validateLenght(limpiarDatos($_POST["phonenumber"]),10) < 1){
-		$phonenumber_err = "El número no es valido";    
-		array_push($response->message,array('id' => "phonenumber-error", 'message' => $phonenumber_err ));
-	} else {
-        $phonenumber = limpiarDatos($_POST["phonenumber"]);
-    }
 
-
-    //validate checkbox protocol
-    if(!isset($_POST["readedProtocol"])) {
-        $readedProtocol_err = "Debes confirmar la lectura del portocolo.";    
-        array_push($response->message,array('id' => "readedProtocol-error", 'message' => $readedProtocol_err ));
-    } else {
-        $readedProtocol = true;
-    }
-
-	// Check input errors before inserting in database
-
-    if(empty($nit_err) && empty($email_err) && empty($phonenumber_err) && empty($lastname_err) &&
-       empty($readedProtocol_err)){
+    if(empty($nit_err)){
         $token = openssl_random_pseudo_bytes(24);
         
         //Convert the binary data into hexadecimal representation.
         $token = bin2hex($token);
         
         // Prepare an insert statement
-        $sql = "INSERT INTO users (nit, username, lastname, email, phonenumber, role, protocol, token) VALUES (:nit , :username, :lastname, :email, :phonenumber, :role, :protocol, :token);";
+        $sql = "UPDATE users SET token = :token where id = :id";
          
         if($stmt = $pdo->prepare($sql)){
 			// Bind variables to the prepared statement as parameters
-			$param_username = $_POST["username"];
-			$param_lastname = $_POST["lastname"];
-            $param_email = $_POST["email"];
-            $param_phonenumber = $_POST["phonenumber"];
-            $param_role = '2';//Usuario
-			$param_nit = $nit;
-
-            $stmt->bindParam(":nit", $param_nit, PDO::PARAM_STR);
-			$stmt->bindParam(":username", $param_username, PDO::PARAM_STR);
-            $stmt->bindParam(":lastname", $param_lastname, PDO::PARAM_STR);
-            $stmt->bindParam(":email", $param_email, PDO::PARAM_STR);
-            $stmt->bindParam(":phonenumber", $param_phonenumber, PDO::PARAM_STR);
-            $stmt->bindParam(":role", $param_role, PDO::PARAM_STR);
-            $stmt->bindParam(":protocol", $readedProtocol, PDO::PARAM_STR);
+            $stmt->bindParam(":id", $id, PDO::PARAM_STR);
             $stmt->bindParam(":token", $token, PDO::PARAM_STR);
 
 			// Attempt to execute the prepared statement
             if($stmt->execute()){
 				
-				// Prepare a select statement
-				$sql = "SELECT id, nit, username, lastname, email, phonenumber, role FROM users WHERE nit = :nit";
-        
-				if($stmtSelect = $pdo->prepare($sql)){
-					// Bind variables to the prepared statement as parameters
-					$stmtSelect->bindParam(":nit", $param_nit, PDO::PARAM_STR);
-		
-					// Set parameters
-					$param_nit = limpiarDatos($_POST["nit"]);
-		
-					// Attempt to execute the prepared statement
-					if($stmtSelect->execute()){
-						$stmtSelect  = $stmtSelect ->fetch();
-                        $id = $stmtSelect['id'];
-                        session_start();
-                        $_SESSION["user"] = $stmtSelect;
-				        sendEmail($param_username,$param_email,'Por favor haz la asignación de tu contraseña', $token);
-                        header("location: views/user/login.php?success=true");
-					} else{
-						echo "Ocurrió un error inesperado. Por favor intentalo de nuevo.";
-					}
-				}
-              
-                
-                //echo " Registro satisfactorio. Te esperamos!";
+                sendEmail($name, $email, $message, $token);
+                header('Location: remember-password?success=true');
             } else{
                 echo "Ocurrió un error inesperado. Por favor intentalo de nuevo.";
             }
@@ -222,51 +116,6 @@ function validateFields(){
 }
 
 
-
-function validarDisponibilidad(){
-    $pdo = getConnection();
-    $maxUser;
-
-    // Prepare a select statement
-    $sql = "SELECT user_limit FROM configuration";
-            
-    if($stmt = $pdo->prepare($sql)){
-
-        // Attempt to execute the prepared statement
-        if($stmt->execute()){
-            $stmt  = $stmt ->fetch();
-            $maxUser = $stmt['user_limit'];
-        } else{
-            echo "Ocurrió un error inesperado. Por favor intentalo de nuevo.";
-        }
-    }
-
-    // Prepare a select statement
-    $sql = "SELECT count(date) as count FROM booking WHERE date = :date";
-        
-    if($stmtSelect = $pdo->prepare($sql)){
-        // Bind variables to the prepared statement as parameters
-        $stmtSelect->bindParam(":date", $date, PDO::PARAM_STR);
-
-        // Set parameters
-        $param_nit = limpiarDatos($_POST["date"]);
-
-        // Attempt to execute the prepared statement
-        if($stmtSelect->execute()){
-            $stmtSelect  = $stmtSelect ->fetch();
-            $counter = $stmtSelect['count'];
-            if($counter >=$user_limit){
-                echo false;
-            } else {
-                echo true;
-            }
-        } else{
-            echo "Ocurrió un error inesperado. Por favor intentalo de nuevo.";
-        }
-    }
-    unset($stmtSelect);
-    
-}
 
 # Funcion para limpiar y convertir datos como espacios en blanco, barras y caracteres especiales en entidades HTML.
 # Return: los datos limpios y convertidos en entidades HTML.

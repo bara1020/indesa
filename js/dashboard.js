@@ -25,8 +25,13 @@ $(document).ready(function () {
   getConfiguration();
   //End: getConfiguration
 
-
-
+  //Begin: getTiqueteras
+  getTiqueteras();
+  //End: getTiqueteras
+  
+  //Begin: getBooking
+  getBooking();
+  //End: getBooking
 
 
   //Ejecución del registro 
@@ -35,8 +40,8 @@ $(document).ready(function () {
     var data = $('#register-form').serializeArray();
     data.push({ name: 'origin', value: 'principal'});
     data.push({ name: 'role', value: $('.selectpicker').val() });
+    data.push({ name: 'id_tiquetera', value: $('.selectpickerPlan').val() });
     data.push({ name: 'tag', value: 'register' });
-    console.log(data);
     $.ajax({
       url: '../../admin/functions.php',
       type: "post",
@@ -88,7 +93,6 @@ $(document).ready(function () {
 });
 
 
-
 //Ejecución del update user
   $("#update").on('click', function(e){
     var formData = new FormData();
@@ -101,6 +105,7 @@ $(document).ready(function () {
     formData.append('phonenumber',$('#inputPhoneNumber-update').val());
     formData.append('estado',$('#selectpickerState').val());
     formData.append('idRole',$('#selectpicker').val());
+    formData.append('id_tiquetera',$('#selectpickerPlanUpdate').val());
     formData.append('id',idSelected);
     formData.append('role',$("#selectpicker option:selected").text());
     $.ajax({
@@ -252,7 +257,6 @@ $(document).ready(function () {
       }
     })
       .done(function (res) {// true
-        console.log(res);
         row.remove().draw();
         $('#deleteModal').modal('toggle');
         $("#deleteModal .close").click();
@@ -286,7 +290,6 @@ $(document).ready(function () {
       }
     })
       .done(function (res) {// true
-        console.log(res);
         row.remove().draw();
         $('#deleteModal').modal('toggle');
         $("#deleteModal .close").click();
@@ -351,7 +354,6 @@ $(document).ready(function () {
       .done(function (res) {// true
         //Begin: datatable User
         var table;
-        
         if(role != 'Administrador'){
           table = $('#example').DataTable({
             data: JSON.parse(res),
@@ -469,7 +471,7 @@ $(document).ready(function () {
           $('#inputEmail-update').val(data.email);
           $(".selectpicker").val(data.id_role);
           $(".selectpickerState").val(data.estado);
-          console.log(data);
+          $(".selectpickerPlan").val(data.id_tiquetera);
           if(data.consent != "" && data.consent != null){
             $('#show-document').show();
             $('#btn-show-document').attr('href','../../admin/download.php?file=' + data.consent.split('/')[2] + "&process=consent");
@@ -499,6 +501,293 @@ $(document).ready(function () {
     return dataSet;
   }
 
+  /**
+   * Optiene la lista de tiqueteras
+   */
+  function getTiqueteras() {
+    let data = [{ name: 'tag', value: 'getTiqueteras' }];//esto permite saber que funcion del php voy a ejecutar
+    var dataSet = $.ajax({
+      url: '../../admin/functions.php',
+      type: "post",
+      data,
+      beforeSend: function () {
+        $('.fa').css('display', 'inline');
+      }
+    })
+      .done(function (res) {
+        var json = JSON.parse(res);
+        var table;
+        if(role == 'Administrador'){
+            table = $('#tiqueteras').DataTable({
+            data: json,
+            retrieve: true,
+            responsive: true,
+            columns: [
+              { title: "id", data: "id", visible: false },
+              { title: "Descripción", data: "description"},
+              { title: "Días", data: "days" },
+              { title: "Acción" , className: "actions-class" },
+            ],
+            "columnDefs": [{
+              "targets": -1,
+              "data": null,
+              "className": "actions-class",
+              "defaultContent": `
+                              <button class='btn btn-warning edit'><i class="fas fa-edit"></i></button>
+                              <button class='btn btn-danger delete'><i class="far fa-trash-alt"></i></button>
+                              `
+            }],
+            "language": {
+              "sProcessing": "Procesando...",
+              "sLengthMenu": "Mostrar _MENU_ registros",
+              "sZeroRecords": "No se encontraron resultados",
+              "sEmptyTable": "Ningún dato disponible en esta tabla",
+              "sInfo": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+              "sInfoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
+              "sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
+              "sInfoPostFix": "",
+              "sSearch": "Buscar:",
+              "sUrl": "",
+              "sInfoThousands": ",",
+              "sLoadingRecords": "Cargando...",
+              "oPaginate": {
+                "sFirst": "Primero",
+                "sLast": "Último",
+                "sNext": "Siguiente",
+                "sPrevious": "Anterior"
+              },
+              "oAria": {
+                "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
+                "sSortDescending": ": Activar para ordenar la columna de manera descendente"
+              }
+            }
+          });
+        }
+        
+        $('#tiqueteras tbody').on('click', '.edit', function () {
+          $('#show-document').hide();
+          let data = table.row($(this).parents('tr')).data();
+          row = table.row($(this).parents('tr'));
+          idSelected = data.id;
+          $('#id-update').val(data.id);
+          $('#descriptionTiqueterasUpdate').val(data.description);
+          $('#daysTiqueterasUpdate').val(data.days);
+          $('#update').show();
+          $('#updateModal').modal('show');
+        });
+
+        $('#tiqueteras tbody').on('click', '.delete', function () {
+          row = table.row($(this).parents('tr'));
+          $('#deleteModal').modal('show');
+
+        });
+        //End: datatable User
+
+
+        json.forEach(element => {
+           $('.selectpickerPlan').append(`<option value=${element.id}>${element.description}</option>`);
+        });
+
+        return res.responseText;
+      })
+      .fail(function (e) {// false
+        console.log("Error" + e.responseText);
+      })
+      .always(function () { // seria como un finally
+        setTimeout(function () {
+          $('.fa').hide();
+        }, 1000);
+      });
+    return dataSet;
+  }
+  
+  /**
+   * Optiene la lista de tiqueteras
+   */
+  function getBooking() {
+    let data = [{ name: 'tag', value: 'getBooking' }];//esto permite saber que funcion del php voy a ejecutar
+    var dataSet = $.ajax({
+      url: '../../admin/functions.php',
+      type: "post",
+      data,
+      beforeSend: function () {
+        $('.fa').css('display', 'inline');
+      }
+    })
+      .done(function (res) {
+        var json = JSON.parse(res);
+        var table;
+            table = $('#booking').DataTable({
+            data: json,
+            retrieve: true,
+            responsive: true,
+            columns: [
+              { title: "id", data: "id", visible: false },
+              { title: "Cédula", data: "nit"},
+              { title: "Fecha", data: "date"},
+              { title: "Hora desde", data: "schedulerFrom"},
+              { title: "Hora Hasta", data: "schedulerTo" },
+              { title: "Nombres", data: "username"},
+              { title: "Apellidos", data: "lastname" }
+            ],
+            "language": {
+              "sProcessing": "Procesando...",
+              "sLengthMenu": "Mostrar _MENU_ registros",
+              "sZeroRecords": "No se encontraron resultados",
+              "sEmptyTable": "Ningún dato disponible en esta tabla",
+              "sInfo": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+              "sInfoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
+              "sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
+              "sInfoPostFix": "",
+              "sSearch": "Buscar:",
+              "sUrl": "",
+              "sInfoThousands": ",",
+              "sLoadingRecords": "Cargando...",
+              "oPaginate": {
+                "sFirst": "Primero",
+                "sLast": "Último",
+                "sNext": "Siguiente",
+                "sPrevious": "Anterior"
+              },
+              "oAria": {
+                "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
+                "sSortDescending": ": Activar para ordenar la columna de manera descendente"
+              }
+            }
+          });
+    
+        return res.responseText;
+      })
+      .fail(function (e) {// false
+        console.log("Error" + e.responseText);
+      })
+      .always(function () { // seria como un finally
+        setTimeout(function () {
+          $('.fa').hide();
+        }, 1000);
+      });
+    return dataSet;
+  }
+
+
+  //Ejecución del registro 
+  $('#register-tiquetera').click(function (e) {
+    e.preventDefault();
+    var data = $('#register-form').serializeArray();
+    data.push({ name: 'tag', value: 'registerTiquetera' });
+    $.ajax({
+      url: '../../admin/functions.php',
+      type: "post",
+      data,
+      beforeSend: function () {
+        $('.fa').css('display', 'inline');
+      }
+    })
+      .done(function (res) {// true
+        $('.help-block').hide();
+        let json = JSON.parse(res);
+
+        json.message.forEach(element => {
+          $("#" + element.id).text(element.message);
+          $("#" + element.id).show();
+        });
+
+        if (json.status) {
+          let table = $('#tiqueteras').DataTable();
+          $('#registerModal').modal('toggle');
+          table.row.add(json.message[0].data).draw();
+          $("#registerModal .close").click();
+          $("#register-form")[0].reset();
+          $('.help-block').hide();
+          $("#alert-row").show();
+
+          setTimeout(function () {
+            $('#alert-row').hide();
+          }, 5000);
+        }
+
+      })
+      .fail(function (e) {// false
+        console.log("Error" + e.responseText);
+      })
+      .always(function () { // seria como un finally
+        setTimeout(function () {
+          $('.fa').hide();
+        }, 1000);
+
+      });
+    return false;
+  });
+
+  //Ejecución del update user
+  $("#update-tiquetera").on('click', function(e){
+    var formData = new FormData();
+    formData.append('descriptionTiqueteras',$('#descriptionTiqueterasUpdate').val());
+    formData.append('daysTiqueteras',$('#daysTiqueterasUpdate').val());
+    formData.append('id',idSelected);
+    formData.append('tag','updateTiquetera');
+    $.ajax({
+        url: '../../admin/functions.php',
+        type: 'post',
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function(response) {
+          $('.help-block').hide();
+          let json = JSON.parse(response);
+          json.message.forEach(element => {
+            $("#" + element.id).text(element.message);
+            $("#" + element.id).show();
+          });
+  
+          if (json.status) {
+            row.data(json.message[0].data);
+            $('#updateModal').modal('toggle');
+            $("#updateModal .close").click();
+            $("#update-form")[0].reset();
+            $('.help-block').hide();
+            $("#alert-row").show();
+            setTimeout(function () {
+              $('#alert-row').hide();
+            }, 5000);
+          }
+        }
+    });
+    return false;
+});
+
+
+  //Elimina una tiquetera
+  $('#delete-tiquetera').click(function (e) {
+    e.preventDefault();
+    let data = [];
+    data.push({ name: "id", value: row.data().id });
+    data.push({ name: 'tag', value: 'deleteTiquetera' });//esto permite saber que funcion del php voy a ejecutar
+
+    $.ajax({
+      url: '../../admin/functions.php',
+      type: "post",
+      data,
+      beforeSend: function () {
+        $('.fa').css('display', 'inline');
+      }
+    })
+      .done(function (res) {// true
+        row.remove().draw();
+        $('#deleteModal').modal('toggle');
+        $("#deleteModal .close").click();
+      })
+      .fail(function (e) {// false
+        console.log("Error" + e.responseText);
+      })
+      .always(function () { // seria como un finally
+        setTimeout(function () {
+          $('.fa').hide();
+        }, 1000);
+
+      });
+    return false;
+  });
 
   /**
    * Get pico y cedula
@@ -549,7 +838,6 @@ $(document).ready(function () {
     })
       .done(function (res) {
         let json = JSON.parse(res);
-        console.log(json);
         $('#userLimit').val(json.user_limit);
       })
       .fail(function (e) {// false

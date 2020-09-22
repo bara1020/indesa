@@ -87,12 +87,19 @@ include('../../includes/navbar.php');
           </div>
 
           <div class="form-label-group">
-            <label>Selecciona el rol</label>
+            <label>Rol</label>
             <br>
             <select class="selectpicker">
                 <option value="2">Usuario</option>
                 <option value="3">Recaudo</option>
+                <option value="4">Entrenador</option>
                 <option value="1">Administrador</option>
+            </select>
+          </div>
+          <div class="form-label-group">
+            <label>Plan</label>
+            <br>
+            <select id="selectpickerPlan" class="selectpickerPlan">
             </select>
           </div>
           <hr>
@@ -167,6 +174,8 @@ include('../../includes/navbar.php');
             <br>
             <select id="selectpicker" class="selectpicker">
                 <option value="2">Usuario</option>
+                <option value="3">Recaudo</option>
+                <option value="4">Entrenador</option>
                 <option value="1">Administrador</option>
             </select>
           </div>
@@ -176,6 +185,12 @@ include('../../includes/navbar.php');
             <select id="selectpickerState" class="selectpickerState">
                 <option value="Activo">Activo</option>
                 <option value="Inactivo">Inactivo</option>
+            </select>
+          </div>
+          <div class="form-label-group">
+            <label>Plan</label>
+            <br>
+            <select id="selectpickerPlanUpdate" class="selectpickerPlan">
             </select>
           </div>
           <hr>

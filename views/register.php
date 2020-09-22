@@ -9,6 +9,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Expires" content="0">
+ <link rel="icon" 
+      type="image/png" 
+      href="../img/icon.png">
+    <meta http-equiv="Last-Modified" content="0">
+     
+    <meta http-equiv="Cache-Control" content="no-cache, mustrevalidate">
+     
+    <meta http-equiv="Pragma" content="no-cache">
     <title>Indesa - Preinscripción</title>
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
@@ -85,7 +94,7 @@
                   value="<?php echo $phonenumber; ?>" name="phonenumber">
                 <span id="phonenumber-error" class="help-block text-danger"><?php echo $phonenumber_err; ?></span>
               </div>
-              <div class="form-label-group mt-3 <?php echo (!empty($password_err)) ? 'has-error' : ''; ?>">
+             <!-- <div class="form-label-group mt-3 <?php echo (!empty($password_err)) ? 'has-error' : ''; ?>">
                 <label for="password">password</label>
                 <input type="password" id="password" class="form-control" autofocus value="<?php echo $password; ?>"
                   name="password">
@@ -96,12 +105,12 @@
                 <input type="password" name="confirm_password" class="form-control"
                   value="<?php echo $confirm_password; ?>">
                 <span id="confirm-password-error" class="help-block text-danger"><?php echo $confirm_password_err; ?></span>
-              </div>
+              </div>-->
               <div class="form-label-group mt-3 ">
                 <hr>
                 <p>Pulsa el siguiente botón para descagar el protocolo de bioseguridad el cual debes leer y confirmar lectura del mismo.</p>
                 <a class="btn btn-info btn-block" href="./admin/download.php?file=Protocolo_gimnasio_Indesa.pdf">Descargar
-                  Consentimiento</a>
+                  Protocolo</a>
               </div>
               <div class="form-check mt-3">
                 <input class="form-check-input" type="checkbox" name="readedProtocol" value="<?php echo $readedProtocol; ?>" id="readedProtocol">
@@ -116,7 +125,7 @@
                 value="registrar">Registrar
               </button>
               <div class="text-right mt-2">
-                <p>Ya tienes una cuenta? <a href="views/login.php" class="text-secundary cursor-pointer">Ingresa aquí</a></p>
+                <p>Ya tienes una cuenta? <a href="views/user/login.php" class="text-secundary cursor-pointer">Ingresa aquí</a></p>
               </div>
                 </form>
             </div>

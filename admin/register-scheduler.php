@@ -112,52 +112,77 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     }
 
 
-    
-
 	// Check input errors before inserting in database
 
     if(empty($scheduler_err)){
         
         // Prepare an insert statement
-        $sql = "UPDATE users set consent = :consent WHERE id = :id";
-         
+        $aviableDays = intval($_SESSION['user']['aviable_days'])-1;
+        $aviable = 1;
+        if($aviableDays == 0)
+            $aviable = 0;
+
+        if($aviable == 0){
+            $sql = "UPDATE users set consent = :consent, estado = :estado  WHERE id = :id";
+        } else {
+            $sql = "UPDATE users set consent = :consent  WHERE id = :id";
+        }    
         if($stmt = $pdo->prepare($sql)){
 			// Bind variables to the prepared statement as parameters
           
             $stmt->bindParam(":consent", $dest_path, PDO::PARAM_STR);
             $stmt->bindParam(":id", $id, PDO::PARAM_STR);
 
+            if($aviable == 0){
+                $estado = 'Inactivo';
+                $stmt->bindParam(":estado", $estado, PDO::PARAM_STR);
+            }
+
 			// Attempt to execute the prepared statement
             $stmt->execute();
 
-            // Prepare an insert statement
-            $sqlInsert = "INSERT INTO booking (day, schedulerFrom, schedulerTo, userId, date) VALUES (:day, :schedulerFrom, :schedulerTo, :userId, :date);";
-            
-            if($stmtBooking = $pdo->prepare($sqlInsert)){
+            $sqlPurchases = "UPDATE purchases set aviable_days = :aviableDays, aviable = :aviable  WHERE id_user = :id";
+         
+            if($stmtPurchases = $pdo->prepare($sqlPurchases)){
                 // Bind variables to the prepared statement as parameters
-                $param_role = 2;
-
-                $stmtBooking->bindParam(":day", $_POST["day"], PDO::PARAM_STR);
-                $stmtBooking->bindParam(":schedulerFrom", $_POST["schedulerFromUpdate"], PDO::PARAM_STR);
-                $stmtBooking->bindParam(":schedulerTo", $_POST["schedulerToUpdate"], PDO::PARAM_STR);
-                $stmtBooking->bindParam(":userId", $id, PDO::PARAM_STR);
-                $stmtBooking->bindParam(":date", $_POST["dateQuoteUpdate"], PDO::PARAM_STR);
-
+                
+                $stmtPurchases->bindParam(":aviableDays", $aviableDays, PDO::PARAM_STR);
+                $stmtPurchases->bindParam(":aviable", $aviable, PDO::PARAM_STR);
+                $stmtPurchases->bindParam(":id", $id, PDO::PARAM_STR);
+    
                 // Attempt to execute the prepared statement
-                if($stmtBooking->execute()){
-                    $_FILES['uploadedFile']['name']  = "";
-                    $day = "";
-                    $schedulerFrom = "";
-                    $schedulerTo = "";
-                    $date = "";
-                    $_SESSION['success'] = 'Tu hora de reserva es de '. $_POST["schedulerFromUpdate"] . ' a ' . $_POST["schedulerToUpdate"];
-                    $loader = false;
-                    return false;
-                } else{
-                    echo "Ocurrió un error inesperado. Por favor intentalo de nuevo.";
-                }
-                // Close statement
+                $stmtPurchases->execute();
                 unset($stmtBooking);
+                // Prepare an insert statement
+                $sqlInsert = "INSERT INTO booking (day, schedulerFrom, schedulerTo, userId, date) VALUES (:day, :schedulerFrom, :schedulerTo, :userId, :date);";
+                
+                if($stmtBooking = $pdo->prepare($sqlInsert)){
+                    // Bind variables to the prepared statement as parameters
+                    $param_role = 2;
+    
+                    $stmtBooking->bindParam(":day", $_POST["day"], PDO::PARAM_STR);
+                    $stmtBooking->bindParam(":schedulerFrom", $_POST["schedulerFromUpdate"], PDO::PARAM_STR);
+                    $stmtBooking->bindParam(":schedulerTo", $_POST["schedulerToUpdate"], PDO::PARAM_STR);
+                    $stmtBooking->bindParam(":userId", $id, PDO::PARAM_STR);
+                    $stmtBooking->bindParam(":date", $_POST["dateQuoteUpdate"], PDO::PARAM_STR);
+    
+                    // Attempt to execute the prepared statement
+                    if($stmtBooking->execute()){
+                        $_FILES['uploadedFile']['name']  = "";
+                        $day = "";
+                        $schedulerFrom = "";
+                        $schedulerTo = "";
+                        $date = "";
+                        $_SESSION['success'] = 'Tu hora de reserva es de '. $_POST["schedulerFromUpdate"] . ' a ' . $_POST["schedulerToUpdate"];
+                        $loader = false;
+                        return false;
+                    } else{
+                        echo "Ocurrió un error inesperado. Por favor intentalo de nuevo.";
+                    }
+                    // Close statement
+                    unset($stmtBooking);
+            }
+
             }
         }
     } else {

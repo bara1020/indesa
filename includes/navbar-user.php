@@ -61,6 +61,22 @@
       <i class="fa fa-bars"></i>
     </button>
 
+    <div class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100">
+      <?php
+            $maxDate = date('d-m-Y', strtotime($user['date']. ' + 30 days')) ;
+          if($user['aviable'] == 1){
+            echo '
+            <div class="alert alert-info mt-1" role="alert">
+                <strong>Recuerda, tienes ' .$user['aviable_days'] . ' ingresos hasta el ' . $maxDate . '</strong>
+            </div>';
+          } else{
+            echo '
+            <div class="alert alert-danger mt-1" role="alert">
+                    <strong>Tu plan a cáducado. Te envitamos a acercate a nuestra área de recaudo para adquirir una nueva tiquetera.</strong>
+                  </div>';
+          } 
+      ?>
+     </div> 
 
     <!-- Topbar Navbar -->
     <ul class="navbar-nav ml-auto">
@@ -84,6 +100,7 @@
           </form>
         </div>
       </li>
+     
 
       <li class="nav-item dropdown no-arrow">
         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

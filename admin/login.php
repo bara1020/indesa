@@ -3,13 +3,17 @@
 session_start();
  
 // Check if the user is already logged in, if yes then redirect him to welcome page
+
 if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true){
     if($_SESSION['role'] == 'Usuario')
         header("location: ../../views/user/dashboard-user.php");
-    else
-         header("location: ../views/dashboard/admin-user.php");
+    else if($_SESSION['role'] == 'Entrenador')
+         header("location: ../../views/dashboard/admin-booking.php");
+    else 
+        header("location: ../../views/dashboard/admin-user.php");
         exit;
 }
+
  
 // Include config file
 require_once "config.php";
@@ -38,9 +42,18 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     // Validate credentials
     if(empty($nit_err) && empty($password_err)){
         // Prepare a select statement
-        $sql = "SELECT u.id, u.nit, u.username, u.lastname, u.phonenumber, u.email, u.password, r.name as role
-                FROM users u, roles r
-                WHERE u.role = r.id and nit = :nit";
+        $sql = "SELECT u.id, u.nit, u.username, u.lastname, u.phonenumber, u.email, u.password, r.name as role, u.id_tiquetera, t.description_tiquetera, t.days, p.aviable_days, p.aviable
+                ,p.date
+                FROM users u
+                INNER JOIN roles r
+                on u.role = r.id
+                LEFT JOIN tiqueteras t
+                on u.id_tiquetera = t.ID
+                LEFT JOIN purchases p
+                ON u.id = p.ID_USER
+                
+                WHERE
+                u.nit = :nit";
         
         if($stmt = $pdo->prepare($sql)){
             // Bind variables to the prepared statement as parameters
@@ -71,9 +84,12 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                             $_SESSION["nit"] = $nit;  
                             $_SESSION["role"] = $role;                           
                             $_SESSION["user"] = $row;
+                            getSchedulerDoed($id);
                             if($role == 'Usuario'){
                                 header("location: ../../views/user/dashboard-user.php");
-                            } else {
+                            } else if($role == 'Entrenador'){
+                                 header("location: ../views/dashboard/admin-booking.php");
+                             } else {
                                 header("location: ../views/dashboard/admin-user.php");
                             }
                             // Redirect user to welcome page
@@ -98,4 +114,31 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     // Close connection
     unset($pdo);
 }
+
+function getSchedulerDoed($id){
+   
+    $pdo = getConnection();
+    // Prepare a select statement
+    $sql = "SELECT schedulerFrom, schedulerTo FROM booking WHERE userId = :id and date = :date";
+    $nextDay = date('Y-m-d', strtotime(' +1 day'));
+    //$nextDay = date("Y/m/d");
+    if (session_status() == PHP_SESSION_NONE) {
+        session_start();
+    }
+    if($stmt = $pdo->prepare($sql)){
+        $stmt->bindParam(":id", $id, PDO::PARAM_STR);
+        $stmt->bindParam(":date", $nextDay , PDO::PARAM_STR);
+
+        // Attempt to execute the prepared statement
+        if($stmt->execute()){
+            $stmt = $stmt->fetch();
+            if($stmt['schedulerFrom'] != "")
+                $_SESSION['success'] = 'Tienes la reserva el '. $nextDay . ' de '. $stmt['schedulerFrom'] . ' a ' . $stmt['schedulerTo']; 
+        } else{
+            echo "Ocurrió un error inesperado. Por favor intentalo de nuevo.";
+        }
+    }
+}
+
+
 ?>
