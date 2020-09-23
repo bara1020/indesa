@@ -6,17 +6,18 @@
 server with default setting (user 'root' with no password) */
 
 //Development
-/*define('DB_SERVER', 'localhost');
+define('DB_SERVER', 'localhost');
 define('DB_USERNAME', 'root');
 define('DB_PASSWORD', '');
 define('DB_NAME', 'indesa');
-*/
+
 
 //Production
-define('DB_SERVER', 'localhost');
+/*define('DB_SERVER', 'localhost');
 define('DB_USERNAME', 'indesago_registe');
 define('DB_PASSWORD', 'IFwdoj?O)vgx');
 define('DB_NAME', 'indesago_registro');
+*/
 
 
 /* Attempt to connect to MySQL database */

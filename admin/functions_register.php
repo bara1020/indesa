@@ -29,6 +29,7 @@
 				getConfiguration();
 				break;
 			}
+			
 			default:
 				break;
 		}
@@ -41,6 +42,7 @@
 	 
 
 	$nit = "";
+	$nitConsent = "";
 	$id ="";
     $message ="";
     $day = "";
@@ -49,7 +51,8 @@
     $date = "";
     $success ="";
     $loader = false;
-    $process = "";
+	$process = "";
+	$fileConsent = "";
 
 	$nit_err = "";
     $date_err = "";

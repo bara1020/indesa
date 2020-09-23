@@ -1,6 +1,7 @@
 <?php
     require "../../admin/functions_register.php";
     require "../../admin/register-scheduler.php";
+    require "../../admin/updateFile.php";
     if (session_status() == PHP_SESSION_NONE) {
       session_start();
     }
@@ -19,15 +20,47 @@
     $confirm_password = $user['password'];
     include('../../includes/header.php');
     include('../../includes/navbar-user.php');
-?>
+    ?>
 
 <div class="container">
   <div class="row">
     <div class="col-md-12">
+      
       <div class="card">
         <div class="card-body">
           <h1 class="card-title text-center text-secundary">Hola <?php echo $user['username'];?></h1>
           <h2 class="card-title text-center text-secundary">Aquí puedes reservar tu cita</h2>
+          <div class="card">
+        <div class="card-body">
+          <form id="update-form-consent" class="form-signin" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>"
+            method="post" enctype="multipart/form-data">
+            <input type="number" id="inputNit" class="form-control" autofocus value="<?php echo $nitConsent; ?>" name="nitConsent" style="display:none">
+            <div class="form-label-group mt-3 ">
+                <p>Pulsa click sobre "Descargar Consentimiento" para descargar el consentimiento de bioseguridad el cual podras descargar y cargarlo diligenciado pulsando click sobre "Cargar Archivo ", o si lo deseas, puedes diligenciarlo directamente en el gimnasio. Rercuerda que es un requisito para poder ingresar al gimnasio</p>
+                <a class="btn btn-info btn-block" href="../../admin/download.php?file=Consentimiento_firmado.pdf">Descargar
+                  Consentimiento</a>
+            </div>
+            <div class="form-label-group mt-3">
+                <label for="uploadedFile">Cargar Consentimiento</label>
+                <br>
+                <input style="width:100%" id="uploadedFile" type="file" name="uploadedFile"
+                  placeholder="Selecciona un archivo" />
+                <br>
+                <span id="file_err" class="help-block text-danger "><?php echo $file_err; ?></span>
+            </div>
+            <hr>
+            <div id="message-ok" class="alert alert-success" role="alert">
+            </div>
+            <button id="updateconsent" class="btn btn-lg btn-primary btn-block text-uppercase" type="submit"
+              value="updateconsent">Cargar consentimiento
+            </button>
+          </form>
+        </div>
+      </div>
+
+
+
+
           <form id="update-form" class="form-signin" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>"
             method="post" enctype="multipart/form-data">
             <input type="number" id="inputNit" class="form-control" autofocus value="<?php echo $nit; ?>" name="nit" style="display:none">
@@ -56,11 +89,6 @@
 
                       </div>
                       <hr>
-                      <div class="form-label-group mt-3 ">
-                          <p>Pulsa click sobre "Descargar Consentimiento" para descargar el consentimiento de bioseguridad el cual podras descargar y cargarlo diligenciado pulsando click sobre "Cargar Archivo ", o si lo deseas, puedes diligenciarlo directamente en el gimnasio. Rercuerda que es un requisito para poder ingresar al gimnasio</p>
-                          <a class="btn btn-info btn-block" href="../../admin/download.php?file=Consentimiento_firmado.pdf">Descargar
-                            Consentimiento</a>
-                      </div>
                        <div class="form-label-group mt-3 ">
                           <p>Recuerda diligenciar el formato de registro de asistencia para poder ingresar al gimnasio.</p>
                           <a class="btn btn-info btn-block" href=" https://docs.google.com/forms/d/e/1FAIpQLSffcwg7e776cRXt2LSUGs1LMbi1TQU1xuEKKDsg3IO56d9peQ/viewform">Diligenciar Formulario</a>
@@ -68,14 +96,6 @@
                       
                      
 
-                      <div class="form-label-group mt-3">
-                          <label for="uploadedFile">Cargar Consentimiento Firmado</label>
-                          <br>
-                          <input style="width:100%" id="uploadedFile" type="file" name="uploadedFile"
-                            placeholder="Selecciona un archivo" />
-                          <br>
-                          <span id="file_err" class="help-block text-danger "><?php echo $file_err; ?></span>
-                      </div>
                       <hr>
                       <div class="form-label-group mt-4">
                         <h6 id="scheduler-title" style="display:none">Horarios disponibles</h6>

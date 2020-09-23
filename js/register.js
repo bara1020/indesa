@@ -17,7 +17,7 @@ $(document).ready(function () {
 
 
     $('#uploadedFile').inputFileText({
-        text: 'Cargar Archivo', // The button will display this text
+        text: 'Selecciona el archivo', // The button will display this text
     });
     var today = new Date();
     var dd = today.getDate();

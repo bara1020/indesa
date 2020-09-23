@@ -600,7 +600,9 @@ $(document).ready(function () {
       });
     return dataSet;
   }
+
   
+
   /**
    * Optiene la lista de tiqueteras
    */
@@ -616,7 +618,12 @@ $(document).ready(function () {
     })
       .done(function (res) {
         var json = JSON.parse(res);
-        var table;
+
+        json.forEach((element,index) => {
+          json[index].date = element.date.split(' ')[0];
+        });
+
+        
             table = $('#booking').DataTable({
             data: json,
             retrieve: true,
@@ -624,11 +631,11 @@ $(document).ready(function () {
             columns: [
               { title: "id", data: "id", visible: false },
               { title: "Cédula", data: "nit"},
+              { title: "Nombres", data: "username"},
+              { title: "Apellidos", data: "lastname" },
               { title: "Fecha", data: "date"},
               { title: "Hora desde", data: "schedulerFrom"},
               { title: "Hora Hasta", data: "schedulerTo" },
-              { title: "Nombres", data: "username"},
-              { title: "Apellidos", data: "lastname" }
             ],
             "language": {
               "sProcessing": "Procesando...",
@@ -669,7 +676,50 @@ $(document).ready(function () {
     return dataSet;
   }
 
+$('#btn-export').click(function(e){
+  var createXLSLFormatObj = [];
+  var xlsHeader = ["Cedula","Nombres","Apellidos", "Fecha", "Hora Desde", "Hora Hasta" ];
+  var xlsRows = [];
+  let data = table.rows({"filter":"applied"}).data().toArray();
 
+  data.forEach(element => {
+     let row = {"Cedula":null,"Nombres":null,"Apellidos":null, "Fecha":null, "Hora Desde":null, "Hora Hasta":null,};
+     row.Cedula = element.nit;
+     row.Nombres = element.username ;
+     row.Apellidos = element.lastname;
+     row.Fecha = element.date;
+     row["Hora Desde"] = element.schedulerFrom;
+     row["Hora Hasta"] = element.schedulerTo;
+     xlsRows.push(row);
+  });
+
+
+ createXLSLFormatObj.push(xlsHeader);
+        $.each(xlsRows, function(index, value) {
+            var innerRowData = [];
+            $("tbody").append('<tr><td>' + value.EmployeeID + '</td><td>' + value.FullName + '</td></tr>');
+            $.each(value, function(ind, val) {
+
+                innerRowData.push(val);
+            });
+            createXLSLFormatObj.push(innerRowData);
+        });
+
+
+        var filename = "FreakyJSON_To_XLS.xlsx";
+
+        var ws_name = "FreakySheet";
+
+        if (typeof console !== 'undefined') console.log(new Date());
+        var wb = XLSX.utils.book_new(),
+            ws = XLSX.utils.aoa_to_sheet(createXLSLFormatObj);
+
+        XLSX.utils.book_append_sheet(wb, ws, ws_name);
+
+        if (typeof console !== 'undefined') console.log(new Date());
+        XLSX.writeFile(wb, filename);
+        if (typeof console !== 'undefined') console.log(new Date());
+})
   //Ejecución del registro 
   $('#register-tiquetera').click(function (e) {
     e.preventDefault();

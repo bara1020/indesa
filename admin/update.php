@@ -289,7 +289,7 @@ function uploadFiles(){
         $fileNameCmps = explode(".", $fileName);
         $fileExtension = strtolower(end($fileNameCmps));
         $newFileName = md5(time() . $fileName) . '.' . $fileExtension;
-        $allowedfileExtensions = array('jpg', 'png', 'pdf');
+        $allowedfileExtensions = array('jpg', 'png', 'pdf', 'jpeg');
         if (in_array($fileExtension, $allowedfileExtensions)) {
             // directory in which the uploaded file will be moved
             $uploadFileDir = '../uploaded_files/';

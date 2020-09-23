@@ -789,10 +789,10 @@ function getUsers(){
 ##Captura todos los usuarios que se encuentran registrados en la plataforma
 function getBooking(){
 	$pdo = getConnection();
-	$date = date('Y-m-d');
-	$stmt = $pdo->prepare("SELECT b.id, b.day, b.schedulerFrom, b.schedulerTo, b.userId, b.date, b.currentdate, u.username, u.lastname, u.nit FROM booking b , users u WHERE b.userId = u.id and b.date = :date");
+	//$date = date('Y-m-d');
+	$stmt = $pdo->prepare("SELECT b.id, b.day, b.schedulerFrom, b.schedulerTo, b.userId, b.date, b.currentdate, u.username, u.lastname, u.nit FROM booking b , users u WHERE b.userId = u.id ");
 	
-	$stmt->bindParam(":date", $date, PDO::PARAM_STR);
+	//$stmt->bindParam(":date", $date, PDO::PARAM_STR);
 	$stmt->execute();
 
 	// set the resulting array to associative
