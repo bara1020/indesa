@@ -26,6 +26,7 @@ $token = $_GET['token'];
 
     <link href="../../css/sb-admin-2.css" rel="stylesheet">
     <script src="../../js/jquery-file-input.js"></script>
+    <script src="../../js/register-password.js"></script>
 </head>
 <body>
 
