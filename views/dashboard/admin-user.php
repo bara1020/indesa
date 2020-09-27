@@ -1,5 +1,6 @@
 <?php 
  require '../../admin/functions.php'; 
+ 
  if (session_status() == PHP_SESSION_NONE) {
    session_start();
  }
@@ -169,16 +170,34 @@ include('../../includes/navbar.php');
               <br>
               <span id="file_err" class="help-block text-danger "><?php echo $file_err; ?></span>
           </div>
-          <div class="form-label-group">
-            <label>Rol</label>
-            <br>
-            <select id="selectpicker" class="selectpicker">
-                <option value="2">Usuario</option>
-                <option value="3">Recaudo</option>
-                <option value="4">Entrenador</option>
-                <option value="1">Administrador</option>
-            </select>
-          </div>
+
+          <?php
+                if($role === 'Administrador'){
+                  echo '<div class="form-label-group">
+                  <label>Rol</label>
+                  <br>
+                  <select id="selectpicker" class="selectpicker">
+                      <option value="2">Usuario</option>
+                      <option value="3">Recaudo</option>
+                      <option value="4">Entrenador</option>
+                      <option value="1">Administrador</option>
+                  </select>
+                </div>';
+                } else {
+                  echo '<div class="form-label-group" style="display:none">
+                      <label>Rol</label>
+                      <br>
+                      <select id="selectpicker" class="selectpicker">
+                          <option value="2">Usuario</option>
+                          <option value="3">Recaudo</option>
+                          <option value="4">Entrenador</option>
+                          <option value="1">Administrador</option>
+                      </select>
+                    </div>';
+                }
+
+          ?>
+          
           <div class="form-label-group">
             <label>Estado</label>
             <br>

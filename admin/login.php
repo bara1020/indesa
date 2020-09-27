@@ -85,6 +85,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                             $_SESSION["role"] = $role;                           
                             $_SESSION["user"] = $row;
                             getSchedulerDoed($id);
+                            validateFormularioAsistencia($id);
                             if($role == 'Usuario'){
                                 header("location: ../../views/user/dashboard-user.php");
                             } else if($role == 'Entrenador'){
@@ -113,6 +114,25 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     
     // Close connection
     unset($pdo);
+}
+
+function validateFormularioAsistencia($id){
+    $pdo = getConnection();
+    // Prepare a select statement
+    $sql = "SELECT id FROM `attendance_registration` WHERE user_id = :id and currentDate >  CURDATE()";
+
+    if($stmt = $pdo->prepare($sql)){
+        // Bind variables to the prepared statement as parameters
+        $stmt->bindParam(":id", $id, PDO::PARAM_STR);
+
+        // Attempt to execute the prepared statement
+        if($stmt->execute()){
+            // Check if nit exists, if yes then verify password
+            if($stmt->rowCount() > 0){
+                $_SESSION["form-ok"] = true;
+            }
+        }
+    }
 }
 
 function getSchedulerDoed($id){
