@@ -1,4 +1,5 @@
 var table;
+var userTable;
 var row;
 var idSelected;
 var role;
@@ -487,7 +488,7 @@ $(document).ready(function () {
 
         });
         //End: datatable User
-
+        userTable = table;
         return res.responseText;
       })
       .fail(function (e) {// false
@@ -697,7 +698,7 @@ $('#btn-export').click(function(e){
  createXLSLFormatObj.push(xlsHeader);
         $.each(xlsRows, function(index, value) {
             var innerRowData = [];
-            $("tbody").append('<tr><td>' + value.EmployeeID + '</td><td>' + value.FullName + '</td></tr>');
+           // $("tbody").append('<tr><td>' + value.EmployeeID + '</td><td>' + value.FullName + '</td></tr>');
             $.each(value, function(ind, val) {
 
                 innerRowData.push(val);
@@ -706,9 +707,9 @@ $('#btn-export').click(function(e){
         });
 
 
-        var filename = "FreakyJSON_To_XLS.xlsx";
+        var filename = "Reporte_Reservas.xlsx";
 
-        var ws_name = "FreakySheet";
+        var ws_name = "Reporte_Reservas";
 
         if (typeof console !== 'undefined') console.log(new Date());
         var wb = XLSX.utils.book_new(),
@@ -720,6 +721,57 @@ $('#btn-export').click(function(e){
         XLSX.writeFile(wb, filename);
         if (typeof console !== 'undefined') console.log(new Date());
 })
+
+
+
+$('#btn-export-users').click(function(e){
+  var createXLSLFormatObj = [];
+  var xlsHeader = ["Cedula","Nombres","Apellidos", "Email", "Teléfono", "Rol", "Estado" ];
+  var xlsRows = [];
+  let data = userTable.rows({"filter":"applied"}).data().toArray();
+
+  data.forEach(element => {
+     let row = {"Cedula":null,"Nombres":null,"Apellidos":null, "Email":null, "Telefono":null, "Rol":null, "Estado":null,};
+     row.Cedula = element.nit;
+     row.Nombres = element.username ;
+     row.Apellidos = element.lastname;
+     row.Email = element.lastname;
+     row.Telefono = element.lastname;
+     row.Rol = element.lastname;
+     row.Estado = element.lastname;
+     xlsRows.push(row);
+  });
+
+
+ createXLSLFormatObj.push(xlsHeader);
+        $.each(xlsRows, function(index, value) {
+            var innerRowData = [];
+           // $("tbody").append('<tr><td>' + value.EmployeeID + '</td><td>' + value.FullName + '</td></tr>');
+            $.each(value, function(ind, val) {
+
+                innerRowData.push(val);
+            });
+            createXLSLFormatObj.push(innerRowData);
+        });
+
+
+        var filename = "Reporte_Usuarios.xlsx";
+
+        var ws_name = "Reporte_Usuarios";
+
+        if (typeof console !== 'undefined') console.log(new Date());
+        var wb = XLSX.utils.book_new(),
+            ws = XLSX.utils.aoa_to_sheet(createXLSLFormatObj);
+
+        XLSX.utils.book_append_sheet(wb, ws, ws_name);
+
+        if (typeof console !== 'undefined') console.log(new Date());
+        XLSX.writeFile(wb, filename);
+        if (typeof console !== 'undefined') console.log(new Date());
+})
+
+
+
   //Ejecución del registro 
   $('#register-tiquetera').click(function (e) {
     e.preventDefault();

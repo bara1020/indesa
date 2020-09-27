@@ -18,13 +18,19 @@ include('../../includes/navbar.php');
 
 
 <div class="container">
-<div class="row">
+
+ <?php
+  if($role === 'Administrador')  {
+    echo ' <div class="row">
     <div class="col-md-12 text-center">
       <!-- Button trigger modal -->
       <button id="btn-export" type="button" class="btn btn-primary" >
       Exportar
       </button>
-    </div>
+    </div>';
+  }
+ ?>
+ 
   </div>
     <input type="text"
       class="form-control" name="roleuser" id="roleuser" aria-describedby="helpId" placeholder="" value="<?php echo $role?>" style="display:none">

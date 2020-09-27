@@ -25,6 +25,14 @@ include('../../includes/navbar.php');
       <button id="btn-register" type="button" class="btn btn-primary" data-toggle="modal" data-target="#registerModal">
         Agregar usuario
       </button>
+      <?php 
+          if($role === 'Administrador')  {
+            echo ' <button id="btn-export-users" type="button" class="btn btn-primary">
+            Exportar
+          </button>';
+          }
+      ?>
+    
     </div>
   </div>
     <input type="text"
@@ -247,5 +255,6 @@ include('../../includes/navbar.php');
 
 include('../../includes/scripts.php');
 echo '  <script src="../../js/dashboard.js"></script>';
+echo '  <script src="../../vendor/excelexport/excelexport.js"></script>';
 include('../../includes/footer.php');
 ?>
