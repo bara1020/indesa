@@ -10,10 +10,6 @@ $(document).ready(function () {
   $('#show-document').hide();
   role = $('#roleuser').val();
 
-  
-
-  
-
   //Begin: GetUsers
   getUsers();
   //End: GetUsers
@@ -477,8 +473,45 @@ $(document).ready(function () {
             $('#show-document').show();
             $('#btn-show-document').attr('href','../../admin/download.php?file=' + data.consent.split('/')[2] + "&process=consent");
           }
+
+
+          let dataForm = [];
+          dataForm.push({ name: "id", value: data.id });
+          dataForm.push({ name: 'tag', value: 'validateFormularioAsistencia' });//esto permite saber que funcion del php voy a ejecutar
+          $.ajax({
+            url: '../../admin/functions.php',
+            type: "post",
+            data:dataForm,
+            beforeSend: function () {
+              $('.fa').css('display', 'inline');
+            }
+          })
+            .done(function (res) {// true
+              if(res == 1){
+                $("#formDiligenciadoS").prop("checked", true);
+                $("#formDiligenciadoN").prop("checked", false);
+              } else{ 
+                $("#formDiligenciadoN").prop("checked", true);
+                $("#formDiligenciadoS").prop("checked", false);
+              }
+
+            })
+            .fail(function (e) {// false
+              console.log("Error" + e.responseText);
+            })
+            .always(function () { // seria como un finally
+              setTimeout(function () {
+                $('.fa').hide();
+              }, 1000);
+      
+            });
+
+
+
           $('#update').show();
           $('#updateModal').modal('show');
+
+          
         });
 
         $('#example tbody').on('click', '.delete', function () {

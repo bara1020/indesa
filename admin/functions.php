@@ -30,6 +30,7 @@
 	$file = "";
 	$descriptionTiqueteras = "";
 	$daysTiqueteras = "";
+	$formDiligenciado = "";
 
 	$descriptionTiqueterasUpdate = "";
 	$daysTiqueterasUpdate = "";
@@ -47,6 +48,7 @@
 	$daysTiqueteras_err = "";
 	$descriptionTiqueterasUpdate_err = "";
 	$daysTiqueterasUpdate_err = "";
+	$formDiligenciado_err = "";
 
 	// Define variables and initialize with empty values
 	$mondayPicoCedula = "";
@@ -190,6 +192,10 @@
 			}
 			case 'getBooking':{
 				getBooking();
+				break;
+			}
+			case 'validateFormularioAsistencia':{
+				validateFormularioAsistencia();
 				break;
 			}
 			default:
@@ -1235,7 +1241,27 @@ function getFile(){
         } 
 }
 
+## E encarga de validar que el usuario haya llenado el formulario el día actual
+function validateFormularioAsistencia(){
+    $pdo = getConnection();
+    // Prepare a select statement
+    $sql = "SELECT id FROM `attendance_registration` WHERE user_id = :id and currentDate >  CURDATE()";
+	
+    if($stmt = $pdo->prepare($sql)){
+        // Bind variables to the prepared statement as parameters
+        $stmt->bindParam(":id", $_POST['id'], PDO::PARAM_STR);
 
+        // Attempt to execute the prepared statement
+        if($stmt->execute()){
+            // Check if nit exists, if yes then verify password
+            if($stmt->rowCount() > 0){
+                echo 1;
+			} else {
+				echo 0;
+			}
+        }
+    }
+}
 
 # Funcion para comprobar la session del admin
 function validateSession(){

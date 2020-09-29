@@ -143,12 +143,6 @@ function saveForm(){
         $embarazada = limpiarDatosForm($_POST["embarazada"]);
     }
    
-    if(empty(limpiarDatosForm($_POST["semanasGestacion"]))){
-		$semanasGestacion_err = "Por favor ingrese el núermo de semanas de gestación.";    
-		array_push($response->message,array('id' => "semanasGestacion-error", 'message' => $semanasGestacion_err ));
-    } else {
-        $semanasGestacion = limpiarDatosForm($_POST["semanasGestacion"]);
-    }
     
     if(empty(limpiarDatosForm($_POST["tomaMedicamentos"]))){
 		$tomaMedicamentos_err = "Por favor indique si consume algún medicamento.";    
@@ -179,11 +173,11 @@ function saveForm(){
         empty($tomaMedicamentos_err) &&
         empty($sintomas_err)
         ){
-        
+    
 		// Prepare an insert statement
-			$sql = "INSERT INTO `attendance_registration`(`sexo`, `fecha_nacimiento`, `nacionalidad`, `telefono`, `direccion`, `departamento`, `municipio`, `contacto_covid`, `enfermedades`, `embarazada`, `semanas_gestacion`, `toma_medicamentos`, `sintomas`, `observaciones`, `user_id`)
+			$sql = "INSERT INTO attendance_registration(sexo, fecha_nacimiento, nacionalidad, telefono, direccion, departamento, municipio, contacto_covid, enfermedades, embarazada, semanas_gestacion, toma_medicamentos, sintomas, observaciones, user_id)
                      VALUES (:sexo, :fecha_nacimiento, :nacionalidad, :telefono, :direccion, :departamento, :municipio, :contacto_covid, :enfermedades, :embarazada, :semanas_gestacion, :toma_medicamentos, :sintomas, :observaciones, :userId);";
-		
+		try{
 			if($stmt = $pdo->prepare($sql)){
 			// Bind variables to the prepared statement as parameters
 
@@ -201,11 +195,13 @@ function saveForm(){
             $stmt->bindParam(":toma_medicamentos", $tomaMedicamentos, PDO::PARAM_STR);
             $stmt->bindParam(":sintomas", $sintomas, PDO::PARAM_STR);
             $stmt->bindParam(":observaciones", $_POST['observaciones'], PDO::PARAM_STR);
+            
             if (session_status() == PHP_SESSION_NONE) {
                 session_start();
               }
             $stmt->bindParam(":userId", $_SESSION["id"], PDO::PARAM_STR);
 			// Attempt to execute the prepared statement
+
             if($stmt->execute()){
                 $response->status = true;
                 $_SESSION["form-ok"] = true;
@@ -216,7 +212,12 @@ function saveForm(){
             }
             // Close statement
             unset($stmt);
+            
         }
+    } catch (Exception $e) {
+    echo 'Excepción capturada: ',  $e->getMessage(), "\n";
+}
+
     } else {
 		echo json_encode($response);
     }

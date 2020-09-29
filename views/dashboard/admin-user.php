@@ -170,6 +170,23 @@ include('../../includes/navbar.php');
                 <a id="btn-show-document"class="btn btn-info btn-block" href="../../admin/download.php?file=Protocolo_gimnasio_Indesa.pdf">Ver
                   Consentimiento</a>
           </div>
+          <div class="form-label-group mt-2 <?php echo (!empty($formDiligenciado_err)) ? 'has-error' : ''; ?>">
+              <label for="formDiligenciado">El usuario diligenció el formulario de hoy?
+              </label>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="formDiligenciado" id="formDiligenciadoS" value="Si">
+                <label class="form-check-label" for="formDiligenciadoS">
+                  Si
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="formDiligenciado" id="formDiligenciadoN" value="No">
+                <label class="form-check-label" for="formDiligenciadoN">
+                  No
+                </label>
+              </div>
+              <span id="formDiligenciado-error"class="help-block text-danger"><?php echo $formDiligenciado_err; ?></span>
+            </div>
           <div class="form-label-group mt-3">
               <label for="uploadedFile">Cargar Consentimiento Firmado</label>
               <br>
