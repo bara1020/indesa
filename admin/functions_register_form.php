@@ -22,6 +22,7 @@
    $observaciones  = "";
    $tomaMedicamentos  = "";
    $sintomas  = "";
+   $temperatura = "";
 
 
    $userLimit_err = "";
@@ -41,6 +42,7 @@
    $tomaMedicamentos_err = "";
    $observaciones_err = "";
    $sintomas_err  = "";
+   $temperatura_err = "";
     
 	if(isset($tag) && $tag !== ''){
 		switch ($tag) {
@@ -99,6 +101,13 @@ function saveForm(){
 		array_push($response->message,array('id' => "direccion-error", 'message' => $direccion_err ));
     } else {
         $direccion = limpiarDatosForm($_POST["direccion"]);
+    }
+
+    if(empty(limpiarDatosForm($_POST["temperatura"]))){
+		$temperatura_err = "Por favor ingrese la dirección.";    
+		array_push($response->message,array('id' => "temperatura-error", 'message' => $temperatura_err ));
+    } else {
+        $temperatura = limpiarDatosForm($_POST["temperatura"]);
     }
     
     if(empty(limpiarDatosForm($_POST["departamento"]))){
@@ -171,12 +180,13 @@ function saveForm(){
         empty($embarazada_err) &&
         empty($semanasGestacion_err) &&
         empty($tomaMedicamentos_err) &&
-        empty($sintomas_err)
+        empty($sintomas_err) &&
+        empty($temperatura_err)
         ){
     
 		// Prepare an insert statement
-			$sql = "INSERT INTO attendance_registration(sexo, fecha_nacimiento, nacionalidad, telefono, direccion, departamento, municipio, contacto_covid, enfermedades, embarazada, semanas_gestacion, toma_medicamentos, sintomas, observaciones, user_id)
-                     VALUES (:sexo, :fecha_nacimiento, :nacionalidad, :telefono, :direccion, :departamento, :municipio, :contacto_covid, :enfermedades, :embarazada, :semanas_gestacion, :toma_medicamentos, :sintomas, :observaciones, :userId);";
+			$sql = "INSERT INTO attendance_registration(sexo, fecha_nacimiento, nacionalidad, telefono, direccion, departamento, municipio, contacto_covid, enfermedades, embarazada, semanas_gestacion, toma_medicamentos, sintomas, observaciones, user_id, temperatura)
+                     VALUES (:sexo, :fecha_nacimiento, :nacionalidad, :telefono, :direccion, :departamento, :municipio, :contacto_covid, :enfermedades, :embarazada, :semanas_gestacion, :toma_medicamentos, :sintomas, :observaciones, :userId, :temperatura);";
 		try{
 			if($stmt = $pdo->prepare($sql)){
 			// Bind variables to the prepared statement as parameters
@@ -194,6 +204,7 @@ function saveForm(){
             $stmt->bindParam(":semanas_gestacion", $semanasGestacion, PDO::PARAM_STR);
             $stmt->bindParam(":toma_medicamentos", $tomaMedicamentos, PDO::PARAM_STR);
             $stmt->bindParam(":sintomas", $sintomas, PDO::PARAM_STR);
+            $stmt->bindParam(":temperatura", $temperatura, PDO::PARAM_STR);
             $stmt->bindParam(":observaciones", $_POST['observaciones'], PDO::PARAM_STR);
             
             if (session_status() == PHP_SESSION_NONE) {

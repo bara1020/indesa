@@ -97,6 +97,7 @@ $('#insert-asistencia').click(function(){
   formData.append('embarazada',$("input[name='embarazada']:checked").val());
   formData.append('semanasGestacion',$("#semanasGestacion").val());
   formData.append('tomaMedicamentos',$("#tomaMedicamentos").val());
+  formData.append('temperatura',$("#temperatura").val());
   formData.append('observaciones',$("#observaciones").val());
   var selectedLanguage = new Array();
     $('input[name="sintomas"]:checked').each(function() {

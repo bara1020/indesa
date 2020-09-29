@@ -484,13 +484,19 @@
 
             </div>
           
+            <div class="form-label-group mt-2 <?php echo (!empty($temperatura_err)) ? 'has-error' : ''; ?> mb-4">
+              <label for="temperatura">temperatura</label>
+              <input type="number" id="temperatura" class="form-control" autofocus
+                value="<?php echo $temperatura; ?>" name="temperatura">
+              <span id="temperatura-error" class="help-block text-danger"><?php echo $temperatura_err; ?></span>
+            </div>
             <div class="form-label-group mt-2 <?php echo (!empty($observaciones_err)) ? 'has-error' : ''; ?> mb-4">
               <label for="observaciones">observaciones</label>
               <input type="text" id="observaciones" class="form-control" autofocus
                 value="<?php echo $observaciones; ?>" name="observaciones">
               <span id="observaciones-error" class="help-block text-danger"><?php echo $observaciones_err; ?></span>
             </div>
-            <button id="insert-asistencia" class="btn btn-lg btn-primary btn-block text-uppercase" type="button" value="actualizar">Actualizar</button>
+            <button id="insert-asistencia" class="btn btn-lg btn-primary btn-block text-uppercase" type="button" value="actualizar">Registrar</button>
           </form>
         </div>
       </div>
