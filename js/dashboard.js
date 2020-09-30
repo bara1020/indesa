@@ -715,7 +715,7 @@ $('#btn-export').click(function(e){
   var xlsHeader = ["Cedula","Nombres","Apellidos", "Fecha", "Hora Desde", "Hora Hasta" ];
   var xlsRows = [];
   let data = table.rows({"filter":"applied"}).data().toArray();
-
+  
   data.forEach(element => {
      let row = {"Cedula":null,"Nombres":null,"Apellidos":null, "Fecha":null, "Hora Desde":null, "Hora Hasta":null,};
      row.Cedula = element.nit;
@@ -768,10 +768,10 @@ $('#btn-export-users').click(function(e){
      row.Cedula = element.nit;
      row.Nombres = element.username ;
      row.Apellidos = element.lastname;
-     row.Email = element.lastname;
-     row.Telefono = element.lastname;
-     row.Rol = element.lastname;
-     row.Estado = element.lastname;
+     row.Email = element.email;
+     row.Telefono = element.phonenumber;
+     row.Rol = element.role;
+     row.Estado = element.estado;
      xlsRows.push(row);
   });
 

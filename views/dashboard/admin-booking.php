@@ -20,7 +20,7 @@ include('../../includes/navbar.php');
 <div class="container">
 
  <?php
-  if($role === 'Administrador')  {
+  if($role === 'Administrador'  || $role === 'Recaudo')  {
     echo ' <div class="row">
     <div class="col-md-12 text-center">
       <!-- Button trigger modal -->

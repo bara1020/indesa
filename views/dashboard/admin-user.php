@@ -26,7 +26,7 @@ include('../../includes/navbar.php');
         Agregar usuario
       </button>
       <?php 
-          if($role === 'Administrador')  {
+          if($role === 'Administrador' || $role === 'Recaudo')  {
             echo ' <button id="btn-export-users" type="button" class="btn btn-primary">
             Exportar
           </button>';
@@ -102,7 +102,11 @@ include('../../includes/navbar.php');
                 <option value="2">Usuario</option>
                 <option value="3">Recaudo</option>
                 <option value="4">Entrenador</option>
-                <option value="1">Administrador</option>
+                <?php
+
+                if($role !== 'Recaudo')
+                    echo '<option value="1">Administrador</option>';
+                ?>
             </select>
           </div>
           <div class="form-label-group">

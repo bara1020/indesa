@@ -23,6 +23,8 @@
    $tomaMedicamentos  = "";
    $sintomas  = "";
    $temperatura = "";
+   $otroDescripcion = "";
+   $otroSintoma = "";
 
 
    $userLimit_err = "";
@@ -43,6 +45,8 @@
    $observaciones_err = "";
    $sintomas_err  = "";
    $temperatura_err = "";
+   $otroDescripcion_err = "";
+   $otroSintoma_err = "";
     
 	if(isset($tag) && $tag !== ''){
 		switch ($tag) {
@@ -104,7 +108,7 @@ function saveForm(){
     }
 
     if(empty(limpiarDatosForm($_POST["temperatura"]))){
-		$temperatura_err = "Por favor ingrese la dirección.";    
+		$temperatura_err = "Por favor ingrese la temperatura.";    
 		array_push($response->message,array('id' => "temperatura-error", 'message' => $temperatura_err ));
     } else {
         $temperatura = limpiarDatosForm($_POST["temperatura"]);
@@ -143,6 +147,14 @@ function saveForm(){
 		array_push($response->message,array('id' => "enfermedades-error", 'message' => $enfermedades_err ));
     } else {
         $enfermedades = limpiarDatosForm($_POST["enfermedades"]);
+        if ($enfermedades === 'Otro'){
+            if(empty(limpiarDatosForm($_POST["otroDescripcion"])) || ($_POST["otroDescripcion"] == 'undefined')){
+                $otroDescripcion_err = "Por favor ingresa la descripción de la otra enfermedad.";    
+                array_push($response->message,array('id' => "otroDescripcion-error", 'message' => $otroDescripcion_err ));
+            } else {
+                $otroDescripcion = limpiarDatosForm($_POST["otroDescripcion"]);
+            }
+        }
     }
     
     if(empty(limpiarDatosForm($_POST["embarazada"])) || ($_POST["embarazada"] == 'undefined')){
@@ -165,6 +177,19 @@ function saveForm(){
 		array_push($response->message,array('id' => "sintomas-error", 'message' => $sintomas_err ));
     } else {
         $sintomas = limpiarDatosForm($_POST["sintomas"]);
+
+        $array =  explode(",", $sintomas);
+
+        for($ind = 0; $ind < count($array); $ind ++){
+            if ($array[$ind] === "Otro Sintoma"){
+                if(empty(limpiarDatosForm($_POST["otroSintoma"])) || ($_POST["otroSintoma"] == 'undefined')){
+                    $otroSintoma_err = "Por favor ingresa la descripción del otro sintoma.";    
+                    array_push($response->message,array('id' => "otroSintoma-error", 'message' => $otroSintoma_err ));
+                } else {
+                    $otroSintoma = limpiarDatosForm($_POST["otroSintoma"]);
+                }
+            }
+        }
     }
 
 	if( empty($sexo_err) &&
@@ -177,6 +202,8 @@ function saveForm(){
         empty($contactoCovid_err) &&
         empty($contactoCovidSospechoso_err) &&
         empty($enfermedades_err) &&
+        empty($otroDescripcion_err) &&
+        empty($otroSintoma_err) &&
         empty($embarazada_err) &&
         empty($semanasGestacion_err) &&
         empty($tomaMedicamentos_err) &&
@@ -185,8 +212,8 @@ function saveForm(){
         ){
     
 		// Prepare an insert statement
-			$sql = "INSERT INTO attendance_registration(sexo, fecha_nacimiento, nacionalidad, telefono, direccion, departamento, municipio, contacto_covid, enfermedades, embarazada, semanas_gestacion, toma_medicamentos, sintomas, observaciones, user_id, temperatura)
-                     VALUES (:sexo, :fecha_nacimiento, :nacionalidad, :telefono, :direccion, :departamento, :municipio, :contacto_covid, :enfermedades, :embarazada, :semanas_gestacion, :toma_medicamentos, :sintomas, :observaciones, :userId, :temperatura);";
+			$sql = "INSERT INTO attendance_registration(sexo, fecha_nacimiento, nacionalidad, telefono, direccion, departamento, municipio, contacto_covid, enfermedades, embarazada, semanas_gestacion, toma_medicamentos, sintomas, observaciones, user_id, temperatura, OtraEnfermedad, OtroSintoma)
+                     VALUES (:sexo, :fecha_nacimiento, :nacionalidad, :telefono, :direccion, :departamento, :municipio, :contacto_covid, :enfermedades, :embarazada, :semanas_gestacion, :toma_medicamentos, :sintomas, :observaciones, :userId, :temperatura, :OtraEnfermedad, :otroSintoma);";
 		try{
 			if($stmt = $pdo->prepare($sql)){
 			// Bind variables to the prepared statement as parameters
@@ -200,10 +227,12 @@ function saveForm(){
             $stmt->bindParam(":municipio", $municipio, PDO::PARAM_STR);
             $stmt->bindParam(":contacto_covid", $contactoCovid, PDO::PARAM_STR);
             $stmt->bindParam(":enfermedades", $enfermedades, PDO::PARAM_STR);
+            $stmt->bindParam(":OtraEnfermedad", $otroDescripcion, PDO::PARAM_STR);
             $stmt->bindParam(":embarazada", $embarazada, PDO::PARAM_STR);
             $stmt->bindParam(":semanas_gestacion", $semanasGestacion, PDO::PARAM_STR);
             $stmt->bindParam(":toma_medicamentos", $tomaMedicamentos, PDO::PARAM_STR);
             $stmt->bindParam(":sintomas", $sintomas, PDO::PARAM_STR);
+            $stmt->bindParam(":otroSintoma", $otroSintoma, PDO::PARAM_STR);
             $stmt->bindParam(":temperatura", $temperatura, PDO::PARAM_STR);
             $stmt->bindParam(":observaciones", $_POST['observaciones'], PDO::PARAM_STR);
             

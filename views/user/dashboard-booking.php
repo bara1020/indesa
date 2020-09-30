@@ -1,4 +1,4 @@
-  <?php
+<?php
       require "../../admin/functions_register.php";
       require "../../admin/register-scheduler.php";
       require "../../admin/updateFile.php";
@@ -164,11 +164,11 @@
 
 
   <!--BEGIN: Update Modal -->
-  <div class="modal fade" id="insertModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
+  <div class="modal fade" id="insertModal" tabindex="-1" aria-labelledby="insertModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="updateModalLabel">Formulario de registro de asistencia</h5>
+          <h5 class="modal-title" id="insertModalLabel">Formulario de registro de asistencia</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -343,10 +343,21 @@
                 </label>
               </div>
               <div class="form-check">
-                <input class="form-check-input" type="radio" name="enfermedades" id="Otro" value="Otro">
-                <label class="form-check-label" for="Otro">
-                Otro
-                </label>
+                <div class="row">
+                  <div class="col-md-1">
+                  <input class="form-check-input" type="radio" name="enfermedades" id="Otro" value="Otro">
+                  <label class="form-check-label" for="Otro">
+                  Otro
+                  </label>
+                  </div>
+                  <div class="col-md-11">
+                    <div class="form-label-group mt-2 <?php echo (!empty($otroDescripcion_err)) ? 'has-error' : ''; ?>">
+                      <input type="text" id="otroDescripcion" class="form-control" autofocus
+                        value="<?php echo $otroDescripcion; ?>" name="otroDescripcion" style="width:150px">
+                      <span id="otroDescripcion-error" class="help-block text-danger"><?php echo $otroDescripcion_err; ?></span>
+                    </div>
+                  </div>
+                </div>
               </div>
               <span id="enfermedades-error"class="help-block text-danger"><?php echo $enfermedades_err; ?></span>
             </div>
@@ -475,15 +486,25 @@
                   </label>
                 </div>
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" name="sintomas" value="OtroSintoma" id="Otro Sintoma">
-                  <label class="form-check-label" for="OtroSintoma">
-                  Otro
-                  </label>
+                  <div class="row">
+                    <div class="col-md-1">
+                      <input class="form-check-input" type="checkbox" name="sintomas" value="OtroSintoma" id="Otro Sintoma">
+                      <label class="form-check-label" for="OtroSintoma">
+                      Otro
+                      </label>
+                    </div>
+                    <div class="col-md-11">
+                      <div class="form-label-group mt-2 <?php echo (!empty($otroSintoma_err)) ? 'has-error' : ''; ?>">
+                        <input type="text" id="otroSintoma" class="form-control" autofocus
+                          value="<?php echo $otroSintoma; ?>" name="otroSintoma" style="width:150px">
+                        <span id="otroSintoma-error" class="help-block text-danger"><?php echo $otroSintoma_err; ?></span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               <span id="sintomas-error" class="help-block text-danger"><?php echo $sintomas_err; ?></span>
 
             </div>
-          
             <div class="form-label-group mt-2 <?php echo (!empty($temperatura_err)) ? 'has-error' : ''; ?> mb-4">
               <label for="temperatura">temperatura</label>
               <input type="number" id="temperatura" class="form-control" autofocus
@@ -496,7 +517,7 @@
                 value="<?php echo $observaciones; ?>" name="observaciones">
               <span id="observaciones-error" class="help-block text-danger"><?php echo $observaciones_err; ?></span>
             </div>
-            <button id="insert-asistencia" class="btn btn-lg btn-primary btn-block text-uppercase" type="button" value="actualizar">Registrar</button>
+            <button id="insert-asistencia" class="btn btn-lg btn-primary btn-block text-uppercase" type="button" value="actualizar">Actualizar</button>
           </form>
         </div>
       </div>

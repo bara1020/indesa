@@ -94,6 +94,8 @@ $('#insert-asistencia').click(function(){
   formData.append('contactoCovid',$("input[name='contactoCovid']:checked").val());
   formData.append('contactoCovidSospechoso',$("input[name='contactoCovidSospechoso']:checked").val());
   formData.append('enfermedades',$("input[name='enfermedades']:checked").val());
+  formData.append('otroDescripcion',$("#otroDescripcion").val());
+  formData.append('otroSintoma',$("#otroSintoma").val());
   formData.append('embarazada',$("input[name='embarazada']:checked").val());
   formData.append('semanasGestacion',$("#semanasGestacion").val());
   formData.append('tomaMedicamentos',$("#tomaMedicamentos").val());
@@ -134,6 +136,8 @@ $('#insert-asistencia').click(function(){
       setTimeout(function () {
         $('#alert-row').hide();
       }, 5000);
+    } else {
+      alert("Por favor ingresa todos los campos obligatorios.");
     }
     })
     .fail(function (e) {// false
