@@ -16,6 +16,8 @@ if(isset($_SESSION['loggedin'])){
     }
   }
 }
+
+$_SESSION['loginType'] = "admin"; 
 ?>
 
 <!DOCTYPE html>

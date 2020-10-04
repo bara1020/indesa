@@ -5,12 +5,15 @@ session_start();
 // Check if the user is already logged in, if yes then redirect him to welcome page
 
 if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true){
-    if($_SESSION['role'] == 'Usuario')
+    if($_SESSION['role'] == 'Usuario'){
         header("location: ../../views/user/dashboard-user.php");
-    else if($_SESSION['role'] == 'Entrenador')
+    } else if($_SESSION['role'] == 'Entrenador'){
+        
          header("location: ../../views/dashboard/admin-booking.php");
-    else 
-        header("location: ../../views/dashboard/admin-user.php");
+    } else{
+            header("location: ../views/dashboard/admin-user.php");
+       // header("location: ../../views/dashboard/admin-user.php");
+    }
         exit;
 }
 
@@ -91,7 +94,10 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                             } else if($role == 'Entrenador'){
                                  header("location: ../views/dashboard/admin-booking.php");
                              } else {
-                                header("location: ../views/dashboard/admin-user.php");
+                                 if($_SESSION['loginType'] == 'user')
+                                    header("location: ../dashboard/admin-user.php"); 
+                                 else
+                                    header("location: ../views/dashboard/admin-user.php");
                             }
                             // Redirect user to welcome page
                         } else{
